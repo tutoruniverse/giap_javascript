@@ -63,7 +63,8 @@
     "babel-plugin-named-asset-import": "^0.3.4"
   },
   "dependencies": {
-    "@types/jest": "^25.1.2"
+    "@types/jest": "^25.1.2",
+    "uuidv4": "^6.0.2"
   },
   "jest": {
     "collectCoverageFrom": [
