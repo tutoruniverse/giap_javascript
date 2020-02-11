@@ -19,7 +19,7 @@ export default class GIAPPersistence {
 
   constructor(config) {
     // this.name: store storage name from config
-    this.load();
+    this.load()
   }
 
   // load persisted data from localStorage
