@@ -3,7 +3,7 @@ import GIAPPersistence from 'GIAPPersistence';
 import { uuid } from 'uuidv4';
 import { EventName } from 'constants/app';
 import RequestType from 'constants/requestType';
-import { collectDefaultProps } from 'utilities';
+import { prepareDefaultProps } from 'utils';
 
 export default class GIAPLib {
   config = Config;
@@ -46,10 +46,11 @@ export default class GIAPLib {
     // profile props: this.persistence.props
     // default info: addInfo(properties)
 
-    this.sendRequest(RequestType.EMIT_EVENT,
-      { name,
-        ...collectDefaultProps(this.persistence, this.config) },
-      properties);
+    this.sendRequest(RequestType.EMIT_EVENT, {
+      defaultProps: {
+        name,
+        ...prepareDefaultProps(this.persistence, this.config) },
+      customProps: properties });
   }
 
 
@@ -89,11 +90,33 @@ export default class GIAPLib {
     console.log(type);
     console.log(data);
     console.log(this.persistence.props);
+    this.persistence.enqueue({ type, data });
   }
 
   /* SEND ALL REQUESTS CURRENTLY IN QUEUE */
   flush = async () => {
     /* Group all consecutive 'EVENT' requests to send as one then the 'PROFILE'
     request then repeat the process */
+    const events = [];
+    this.persistence.getQueue().requests.forEach(({ type, data }) => {
+      // if request is EVENT_EMITTING
+      if (type === RequestType.EMIT_EVENT) {
+        events.push(data);
+        return;
+      }
+
+      // otherwise
+      // TODO: send all events in "events" array if available
+      // TODO: send request
+      switch (type) {
+        case RequestType.CREATE_ALIAS:
+          break;
+        case RequestType.GET_IDENTITY:
+          break;
+        case RequestType.MODIFY_PROFILE:
+          break;
+        default:
+      }
+    });
   }
 }

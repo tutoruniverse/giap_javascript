@@ -8,7 +8,7 @@
  *    initial_referring_domain
  *    queue
  */
-import DeviceInfo from 'utilities/deviceInfo';
+import DeviceInfo from 'utils/deviceInfo';
 import { QUEUE_INTERVAL } from 'constants/app';
 
 export default class GIAPPersistence {
@@ -50,6 +50,8 @@ export default class GIAPPersistence {
     // save the changes to localStorage
     localStorage.setItem(this.name, this.props);
   }
+
+  enqueue = (request) => { this.props.queue.requests.push(request); }
 
   getDistinctId = () => this.props.distinctId;
 
