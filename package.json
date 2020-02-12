@@ -6,7 +6,8 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "jest",
-    "test:cov": "npm run test -- --watchAll=false --coverage"
+    "test:cov": "npm run test -- --watchAll=false --coverage",
+    "start-demo": "node demo/start.js"
   },
   "devDependencies": {
     "@babel/core": "7.5.5",
@@ -64,6 +65,8 @@
   },
   "dependencies": {
     "@types/jest": "^25.1.2",
+    "dotenv": "^8.2.0",
+    "dotenv-expand": "^5.1.0",
     "uuidv4": "^6.0.2"
   },
   "jest": {
@@ -112,6 +115,11 @@
     "watchPlugins": [
       "jest-watch-typeahead/filename",
       "jest-watch-typeahead/testname"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "react-app"
     ]
   }
 }
