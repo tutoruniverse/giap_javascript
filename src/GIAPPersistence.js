@@ -25,8 +25,12 @@ export default class GIAPPersistence {
 
     // load persisted data from localStorage
     this.update({
-      ...localStorage.getItem(this.name),
+      ...this.load(),
     });
+    console.log('constructor persistance');
+    console.log(this.name);
+    console.log(this.props);
+    console.log('---');
   }
 
   // register a set of super-props then persist the changes
@@ -38,7 +42,7 @@ export default class GIAPPersistence {
       ...props,
     };
     // save the changes to localStorage
-    localStorage.setItem(this.name, this.props);
+    this.persist();
   }
 
   updateReferrer = (referrer) => {
@@ -48,7 +52,7 @@ export default class GIAPPersistence {
       initialReferringDomain: DeviceInfo.getReferringDomain(referrer) || '$direct',
     });
     // save the changes to localStorage
-    localStorage.setItem(this.name, this.props);
+    this.persist();
   }
 
   enqueue = (request) => { this.props.queue.requests.push(request); }
@@ -60,5 +64,17 @@ export default class GIAPPersistence {
   getPersistedProps = () => {
     const { queue, ...props } = this.props;
     return props;
+  }
+
+  persist = () => {
+    localStorage.setItem(this.name, JSON.stringify(this.props));
+  }
+
+  load = () => {
+    try {
+      return JSON.parse(localStorage.getItem(this.name));
+    } catch {
+      return null;
+    }
   }
 }

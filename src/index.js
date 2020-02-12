@@ -9,7 +9,7 @@ export default class GIAPLib {
   config = Config;
 
   /* INITIALIZE */
-  initialization = (token, serverUrl) => {
+  initialize = (token, serverUrl) => {
     // store token to this.config
     this.config.TOKEN = token;
     if (serverUrl) {
@@ -17,7 +17,7 @@ export default class GIAPLib {
     }
 
     // initialize this.persistence by new GIAPPersistence object
-    this.persistence = new GIAPPersistence(this.config.LIB);
+    this.persistence = new GIAPPersistence(this.config.PERSISTENCE_NAME);
 
     // setup profile:
     //  - if distinctId exists in storage --> return
@@ -79,6 +79,7 @@ export default class GIAPLib {
     // registerOnce: distinctId = deviceId = uuid
     this.persistence.update({
       distinctId: uuid(),
+      userId: undefined,
     });
   }
 

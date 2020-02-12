@@ -138,4 +138,10 @@ describe('GIAPDeviceInfo', () => {
       expect(props.browser).toBe(properties.browser);
     });
   });
+
+  it('should have default window object', () => {
+    window = undefined;
+    setup();
+    expect(props.browser).toBe('Safari');
+  });
 });

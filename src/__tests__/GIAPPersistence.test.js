@@ -5,6 +5,7 @@ describe('GIAPPersistence', () => {
   const name = 'GIAP-javascript';
 
   beforeEach(() => {
+    localStorage.clear();
   });
 
   const setup = () => {
@@ -21,7 +22,9 @@ describe('GIAPPersistence', () => {
     instance.updateReferrer('');
     expect(instance.props.initialReferrer).toBe('$direct');
     expect(instance.props.initialReferringDomain).toBe('$direct');
+  });
 
+  it('should not update initial referrer more than once', () => {
     setup();
     instance.updateReferrer('https://github.com/');
     expect(instance.props.initialReferrer).toBe('https://github.com/');

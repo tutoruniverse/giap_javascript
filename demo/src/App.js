@@ -5,7 +5,7 @@ export default class App extends Component {
   giapLib = new GIAPLib();
 
   componentDidMount() {
-    this.giapLib.initialization('tokenlsakjdflksjdfl');
+    this.giapLib.initialize('tokenlsakjdflksjdfl');
   }
 
   render() {
