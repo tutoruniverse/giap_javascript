@@ -19,15 +19,14 @@ export default class GIAPPersistence {
     },
   }
 
-  constructor(config) {
+  constructor(name) {
     // this.name: store storage name from config
-    this.name = config.LIB;
+    this.name = name;
 
     // load persisted data from localStorage
-    this.props = {
-      ...this.props,
+    this.update({
       ...localStorage.getItem(this.name),
-    };
+    });
   }
 
   // register a set of super-props then persist the changes
@@ -43,7 +42,7 @@ export default class GIAPPersistence {
   }
 
   updateReferrer = (referrer) => {
-    if (this.props.referrer) return;
+    if (this.props.initialReferrer) return;
     this.update({
       initialReferrer: referrer || '$direct',
       initialReferringDomain: DeviceInfo.getReferringDomain(referrer) || '$direct',

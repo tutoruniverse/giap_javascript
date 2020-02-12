@@ -1,5 +1,5 @@
 /* import PaymentSession from '../PaymentSession'; */
-import addDeviceInfo from '../GIAPDeviceInfo';
+import getDeviceInfo from '../GIAPDeviceInfo';
 
 describe('GIAPDeviceInfo', () => {
   let window;
@@ -89,7 +89,7 @@ describe('GIAPDeviceInfo', () => {
   });
 
   const setup = () => {
-    props = addDeviceInfo(props, window);
+    props = getDeviceInfo(window);
   };
 
   it('should collect search engine correctly', () => {

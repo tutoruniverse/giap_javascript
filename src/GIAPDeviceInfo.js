@@ -14,7 +14,7 @@
 */
 import DeviceInfo from 'utilities/deviceInfo';
 
-export default (props, windowCurrent = window) => {
+export default (windowCurrent = window) => {
   const { screen, opera, navigator, document, location } = windowCurrent;
   const { userAgent, vendor } = navigator;
   const { referrer } = document;

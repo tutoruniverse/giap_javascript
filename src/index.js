@@ -17,7 +17,7 @@ export default class GIAPLib {
     }
 
     // initialize this.persistence by new GIAPPersistence object
-    this.persistence = new GIAPPersistence(this.config);
+    this.persistence = new GIAPPersistence(this.config.LIB);
 
     // setup profile:
     //  - if distinctId exists in storage --> return
