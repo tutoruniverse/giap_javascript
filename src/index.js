@@ -1,9 +1,9 @@
-import Config from 'configuration';
-import GIAPPersistence from 'GIAPPersistence';
 import { uuid } from 'uuidv4';
-import { EventName } from 'constants/app';
-import RequestType from 'constants/requestType';
-import { prepareDefaultProps } from 'utils';
+import { prepareDefaultProps } from './utils';
+import Config from './configuration';
+import GIAPPersistence from './GIAPPersistence';
+import { EventName } from './constants/app';
+import RequestType from './constants/requestType';
 
 export default class GIAPLib {
   config = Config;

@@ -1,4 +1,4 @@
-import getDeviceInfo from 'GIAPDeviceInfo';
+import getDeviceInfo from '../GIAPDeviceInfo';
 import CaseConverter from './caseConverter';
 
 export const prepareDefaultProps = (persistence, config) => ({

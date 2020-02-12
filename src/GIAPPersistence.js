@@ -8,8 +8,8 @@
  *    initial_referring_domain
  *    queue
  */
-import DeviceInfo from 'utils/deviceInfo';
-import { QUEUE_INTERVAL } from 'constants/app';
+import DeviceInfo from './utils/deviceInfo';
+import { QUEUE_INTERVAL } from './constants/app';
 
 export default class GIAPPersistence {
   props = {

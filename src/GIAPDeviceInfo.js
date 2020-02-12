@@ -12,7 +12,7 @@
  *  search_keyword
  *  device
 */
-import DeviceInfo from 'utils/deviceInfo';
+import DeviceInfo from './utils/deviceInfo';
 
 export default (windowCurrent = window) => {
   const { screen, opera, navigator, document, location } = windowCurrent;
