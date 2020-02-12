@@ -1,9 +1,9 @@
 import Config from 'configuration';
 import GIAPPersistence from 'GIAPPersistence';
-import DeviceInfo from 'utilities/deviceInfo';
 import { uuid } from 'uuidv4';
 import { EventName } from 'constants/app';
 import RequestType from 'constants/requestType';
+import { collectDefaultProps } from 'utilities';
 
 export default class GIAPLib {
   config = Config;
@@ -30,13 +30,7 @@ export default class GIAPLib {
     }
 
     // initial referrer
-    if (!this.persistence.get('initialReferrer')) {
-      const { referrer } = window.document;
-      this.persistence.update({
-        initialReferrer: referrer,
-        initialReferrerDomain: DeviceInfo.getReferringDomain(referrer),
-      });
-    }
+    this.persistence.updateReferrer(window.document.referrer);
 
     // emit event: track('initialization')
     this.track(EventName.INITIALIZATION);
@@ -52,7 +46,10 @@ export default class GIAPLib {
     // profile props: this.persistence.props
     // default info: addInfo(properties)
 
-    this.sendRequest(RequestType.EMIT_EVENT, { ...properties });
+    this.sendRequest(RequestType.EMIT_EVENT,
+      { name,
+        ...collectDefaultProps(this.persistence, this.config) },
+      properties);
   }
 
 
@@ -89,10 +86,13 @@ export default class GIAPLib {
   // type: EVENT || PROFILE
   sendRequest = (type, data) => {
     // Add request to the queue
+    console.log(type);
+    console.log(data);
+    console.log(this.persistence.props);
   }
 
   /* SEND ALL REQUESTS CURRENTLY IN QUEUE */
-  _flush = async () => {
+  flush = async () => {
     /* Group all consecutive 'EVENT' requests to send as one then the 'PROFILE'
     request then repeat the process */
   }

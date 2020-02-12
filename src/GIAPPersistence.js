@@ -8,12 +8,11 @@
  *    initial_referring_domain
  *    queue
  */
-
+import DeviceInfo from 'utilities/deviceInfo';
 import { QUEUE_INTERVAL } from 'constants/app';
 
 export default class GIAPPersistence {
   props = {
-    profile: {},
     queue: {
       interval: QUEUE_INTERVAL,
       requests: [],
@@ -44,13 +43,21 @@ export default class GIAPPersistence {
   }
 
   updateReferrer = (referrer) => {
-
+    if (this.props.referrer) return;
+    this.update({
+      initialReferrer: referrer || '$direct',
+      initialReferringDomain: DeviceInfo.getReferringDomain(referrer) || '$direct',
+    });
+    // save the changes to localStorage
+    localStorage.setItem(this.name, this.props);
   }
 
-  clear = () => {
-    this.props = {};
-    localStorage.removeItem(this.name);
-  }
+  getDistinctId = () => this.props.distinctId;
 
-  getDistinctId = () => this.props.profile.distinctId;
+  getQueue = () => this.props.queue;
+
+  getPersistedProps = () => {
+    const { queue, ...props } = this.props;
+    return props;
+  }
 }
