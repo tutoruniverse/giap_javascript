@@ -13,33 +13,18 @@ export const request = async (endpoint, method, body, customHeaders = {}) => {
     ...defaultHeaders,
     ...customHeaders,
   };
-  let data = null;
-  if (body) {
-    data = JSON.stringify(body);
-  }
-  const fetchOpts = {
+
+  const res = await fetch(endpoint, {
     method,
     headers,
-  };
-  if (method !== 'HEAD' && method !== 'GET') {
-    fetchOpts.body = data;
+    body: (body ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body)) : undefined),
+  });
+
+  if (res.ok) {
+    return (res.json())
+      .then(res => CaseConverter.snakeCaseToCamelCase(res));
   }
-  try {
-    const response = await fetch(endpoint, fetchOpts);
-    let json = await response.json();
-    // json = removeDataProperty(json);
-    json = CaseConverter.snakeCaseToCamelCase(json);
-    if (response.status < 200 || response.status >= 300) {
-      if (json) {
-        throw new Error(json);
-      } else {
-        throw new Error(response.statusText);
-      }
-    }
-    return json;
-  } catch (err) {
-    console.error(err);
-  }
+  throw res.json();
 };
 
 export default class RequestHelper {

@@ -1,5 +1,5 @@
 import { uuid } from 'uuidv4';
-import { prepareDefaultProps, asyncForEach } from './utils';
+import { prepareDefaultProps, asyncForEach, createEventsBatch } from './utils';
 import RequestHelper from './utils/request';
 import Config from './configuration';
 import GIAPPersistence from './GIAPPersistence';
@@ -126,35 +126,48 @@ export default class GIAPLib {
     /* Group all consecutive 'EVENT' requests to send as one then the 'PROFILE'
     request then repeat the process */
     const events = [];
-    await asyncForEach(requests, async ({ type, data }) => {
+    await asyncForEach(requests, async ({ type, data }, index) => {
       // if request is EVENT_EMITTING
       if (type === RequestType.TRACK) {
         events.push(data);
-        return;
+        if (index < requests.length - 1) return;
       }
 
       // otherwise
       // TODO: send all events in "events" array if available
+      if (events.length) {
+        try {
+          await giapFetch.post('events', createEventsBatch(events));
+        } catch (e) {
+          console.log('Failed emitting events');
+          console.log(e);
+        }
+      }
 
       // TODO: send request
-      switch (type) {
-        case RequestType.ALIAS: {
-          const { userId, distinctId } = data;
-          await giapFetch.post('alias', { userId, distinctId });
-          break; }
-        case RequestType.IDENTIFY: {
-          const { userId, distinctId } = data;
-          await giapFetch.get(`alias/${userId}`,
-            { currentDistinctId: distinctId });
-          break;
-        }
-        case RequestType.SET_PROFILE_PROPERTIES: {
+      try {
+        switch (type) {
+          case RequestType.ALIAS: {
+            const { userId, distinctId } = data;
+            await giapFetch.post('alias', { userId, distinctId });
+            break; }
+          case RequestType.IDENTIFY: {
+            const { userId, distinctId } = data;
+            await giapFetch.get(`alias/${userId}`,
+              { currentDistinctId: distinctId });
+            break;
+          }
+          case RequestType.SET_PROFILE_PROPERTIES: {
           /* /profiles/:distinct_id */
-          const { id, props } = data;
-          await giapFetch.put(`profiles/${id}`, props);
-          break;
+            const { id, props } = data;
+            await giapFetch.put(`profiles/${id}`, props);
+            break;
+          }
+          default:
         }
-        default:
+      } catch (e) {
+        console.log(`Failed ${type}`);
+        console.log(e);
       }
     });
 

@@ -23,6 +23,8 @@ export const prepareDefaultProps = (name, persistence) => mapKeys({
   ...getDeviceInfo(),
 }, key => `_${key}`);
 
+export const createEventsBatch = events => ({ events: events.map(event => event) });
+
 export const asyncForEach = async (array, callback) => {
   for (let index = 0; index < array.length; index++) {
     // eslint-disable-next-line no-await-in-loop
