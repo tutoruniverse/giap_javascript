@@ -130,6 +130,7 @@ export default class GIAPLib {
       // if request is EVENT_EMITTING
       if (type === RequestType.TRACK) {
         events.push(data);
+        // process to emit the events batch if current request is last of queue
         if (index < requests.length - 1) return;
       }
 

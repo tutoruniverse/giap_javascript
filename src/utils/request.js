@@ -7,14 +7,16 @@ const defaultHeaders = {
   'Content-Type': 'application/json',
 };
 
-export const request = async (endpoint, method, body, customHeaders = {}) => {
+const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl) => {
   await new Promise(resolve => setTimeout(resolve, 50));
+  const url = apiUrl + endpoint;
   const headers = {
     ...defaultHeaders,
     ...customHeaders,
+    Authorization: `Bearer ${token}`,
   };
 
-  const res = await fetch(endpoint, {
+  const res = await fetch(url, {
     method,
     headers,
     body: (body ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body)) : undefined),
@@ -42,18 +44,22 @@ export default class RequestHelper {
     if (params && !isEmpty(params)) {
       url += `?${QueryString.stringify(CaseConverter.camelCaseToSnakeCase(params), { encode: true })}`;
     }
-    return request(url, 'GET');
+    return this.request(url, 'GET');
   };
 
   post = (endpoint, body, headers = defaultHeaders) => (
-    request(endpoint, 'POST', body, headers)
+    this.request(endpoint, 'POST', body, headers)
   );
 
   put = (endpoint, body) => (
-    request(endpoint, 'PUT', body)
+    this.request(endpoint, 'PUT', body)
   );
 
   del = (endpoint, body) => (
-    request(endpoint, 'DELETE', body)
+    this.request(endpoint, 'DELETE', body)
   );
+
+  request = (endpoint, method, body, customHeaders = {}) => (
+    request(endpoint, method, body, customHeaders, this.token, this.apiUrl)
+  )
 }

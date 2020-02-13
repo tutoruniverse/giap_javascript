@@ -6,7 +6,7 @@ export default class App extends Component {
   state= { modal: '' };
 
   componentDidMount() {
-    this.giapLib.initialize('tokenlsakjdflksjdfl');
+    this.giapLib.initialize('tokenlsakjdflksjdfl', 'https://www.random-server-url.com/');
   }
 
   giapLib = new GIAPLib();
