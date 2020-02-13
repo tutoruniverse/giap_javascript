@@ -15,19 +15,19 @@
     "@babel/plugin-transform-spread": "7.6.2",
     "@babel/preset-env": "7.5.5",
     "@babel/preset-react": "7.0.0",
-    "babel-loader": "8.0.6",
-    "react-dev-utils": "9.0.3",
-    "webpack": "4.41.0",
     "autoprefixer": "9.6.1",
     "babel-eslint": "10.0.1",
     "babel-jest": "24.9.0",
+    "babel-loader": "8.0.6",
     "babel-plugin-add-module-exports": "1.0.0",
     "babel-plugin-dynamic-import-node": "2.2.0",
     "babel-plugin-inline-react-svg": "^1.1.0",
+    "babel-plugin-named-asset-import": "^0.3.4",
     "babel-plugin-react-svg": "^3.0.3",
     "babel-polyfill": "6.26.0",
     "babel-preset-react-app": "9.0.2",
     "case-sensitive-paths-webpack-plugin": "2.2.0",
+    "coveralls": "3.0.6",
     "css-loader": "2.1.0",
     "enzyme": "3.8.0",
     "enzyme-adapter-react-16": "1.7.1",
@@ -46,7 +46,7 @@
     "isomorphic-fetch": "2.2.1",
     "jest": "24.9.0",
     "jest-environment-jsdom-global": "1.1.0",
-    "jest-fetch-mock": "2.1.2",
+    "jest-fetch-mock": "^2.1.2",
     "jest-watch-typeahead": "0.2.0",
     "jquery": "3.3.1",
     "lerna": "3.16.4",
@@ -54,14 +54,14 @@
     "postcss-loader": "2.0.8",
     "raw-loader": "3.0.0",
     "react": "16.7.0",
+    "react-dev-utils": "9.0.3",
     "react-dom": "16.7.0",
     "react-router-dom": "4.2.2",
     "style-loader": "0.23.1",
     "url-loader": "^2.1.0",
+    "webpack": "4.41.0",
     "webpack-dev-server": "2.9.4",
-    "webpack-node-externals": "1.7.2",
-    "coveralls": "3.0.6",
-    "babel-plugin-named-asset-import": "^0.3.4"
+    "webpack-node-externals": "1.7.2"
   },
   "dependencies": {
     "@types/jest": "^25.1.2",
@@ -71,11 +71,11 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "src/**/*.{js,jsx,mjs}",
-      "!src/utils/caseConverter.js"
+      "src/**/*.{js,jsx,mjs}"
     ],
     "setupFiles": [
-      "<rootDir>/config/polyfills.js"
+      "<rootDir>/config/polyfills.js",
+      "<rootDir>/config/setupJest.js"
     ],
     "testMatch": [
       "<rootDir>/src/**/?(*.)(spec|test).{js,jsx,mjs}",
