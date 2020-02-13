@@ -6,18 +6,16 @@ import { EventName } from './constants/app';
 import RequestType from './constants/requestType';
 
 export default class GIAPLib {
-  config = Config;
-
   /* INITIALIZE */
   initialize = (token, serverUrl) => {
     // store token to this.config
-    this.config.TOKEN = token;
+    this.TOKEN = token;
     if (serverUrl) {
-      this.config.API_URL = serverUrl;
+      this.API_URL = serverUrl;
     }
 
     // initialize this.persistence by new GIAPPersistence object
-    this.persistence = new GIAPPersistence(this.config.PERSISTENCE_NAME);
+    this.persistence = new GIAPPersistence(Config.PERSISTENCE_NAME);
 
     // setup profile:
     //  - if distinctId exists in storage --> return
@@ -47,10 +45,8 @@ export default class GIAPLib {
     // default info: addInfo(properties)
 
     this.sendRequest(RequestType.TRACK, {
-      defaultProps: {
-        name,
-        ...prepareDefaultProps(this.persistence, this.config) },
-      customProps: properties });
+      ...prepareDefaultProps(name, this.persistence),
+      ...properties });
   }
 
 

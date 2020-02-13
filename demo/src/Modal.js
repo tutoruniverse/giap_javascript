@@ -13,8 +13,7 @@ export default class Modal extends Component {
       <div className="modallll">
         {fields.map(field => (
           <div>
-            <input
-              type="text"
+            <textarea
               onChange={this.onInputChange}
               name={field}
               placeholder={field}

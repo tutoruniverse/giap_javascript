@@ -1,20 +1,18 @@
+import Config from '../configuration';
 import getDeviceInfo from '../GIAPDeviceInfo';
-import CaseConverter from './caseConverter';
 
-export const prepareDefaultProps = (persistence, config) => ({
-  ...getDeviceInfo(),
-  lib: config.LIB,
-  libVersion: config.LIB_VERSION,
-  ...persistence.getPersistedProps(),
-});
-
-export const prepareRequestProps = (defaultProps, customProps) => {
+export const mapKeys = (obj, modifier) => {
   const res = {};
-  Object.entries(defaultProps).forEach(
-    ({ k, v }) => { res[`_${CaseConverter.camelCaseToSnakeCase(k)}`] = v; }
-  );
-  Object.entries(customProps).forEach((
-    { k, v }) => { res[`$${CaseConverter.camelCaseToSnakeCase(k)}`] = v; }
-  );
+  Object.entries(obj).forEach(([key, value]) => {
+    res[modifier(key)] = value;
+  });
   return res;
 };
+
+export const prepareDefaultProps = (name, persistence) => mapKeys({
+  name,
+  lib: Config.LIB,
+  libVersion: Config.LIB_VERSION,
+  ...persistence.getPersistedProps(),
+  ...getDeviceInfo(),
+}, key => `_${key}`);
