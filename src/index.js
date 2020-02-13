@@ -1,5 +1,6 @@
 import { uuid } from 'uuidv4';
-import { prepareDefaultProps } from './utils';
+import { prepareDefaultProps, asyncForEach } from './utils';
+import RequestHelper from './utils/request';
 import Config from './configuration';
 import GIAPPersistence from './GIAPPersistence';
 import { EventName } from './constants/app';
@@ -9,10 +10,12 @@ export default class GIAPLib {
   /* INITIALIZE */
   initialize = (token, serverUrl) => {
     // store token to this.config
-    this.TOKEN = token;
+    this.token = token;
     if (serverUrl) {
-      this.API_URL = serverUrl;
+      this.apiUrl = serverUrl;
     }
+
+    this.isFlushing = false;
 
     // initialize this.persistence by new GIAPPersistence object
     this.persistence = new GIAPPersistence(Config.PERSISTENCE_NAME);
@@ -35,6 +38,9 @@ export default class GIAPLib {
 
     // setIntervals:
     // every INTERVAL: this._flush()
+    setInterval(() => {
+      if (!this.isFlushing) this.flush();
+    }, this.persistence.getQueue().interval);
   }
 
 
@@ -52,22 +58,23 @@ export default class GIAPLib {
 
   /* CREATE ALIAS */
   alias = (userId) => {
-    // register: userId
+    const distinctId = this.persistence.getDistinctId();
     this.persistence.update({ userId });
-    this.sendRequest(RequestType.ALIAS, { userId });
+    this.sendRequest(
+      RequestType.ALIAS,
+      { userId, distinctId }
+    );
     this.identify(userId);
   }
 
 
   /* GET IDENTITY */
   identify = (userId) => {
-    // distinctId: get current distinct id from storage
     const distinctId = this.persistence.getDistinctId();
-    // callback: update distinctId based on response
-    this.sendRequest(RequestType.IDENTIFY, {
-      userId,
-      distinctId,
-    });
+    this.sendRequest(
+      RequestType.IDENTIFY,
+      { userId, distinctId }
+    );
 
     // update distinctId
     this.persistence.update({ distinctId: userId });
@@ -76,7 +83,6 @@ export default class GIAPLib {
 
   /* RESET PROFILE */
   reset = () => {
-    // registerOnce: distinctId = deviceId = uuid
     this.persistence.update({
       distinctId: uuid(),
       userId: undefined,
@@ -84,8 +90,12 @@ export default class GIAPLib {
   }
 
   /* MODIFY PROFILE */
-  setProfileProperties = (id, props) => {
-    this.sendRequest(RequestType.SET_PROFILE_PROPERTIES, { id, props });
+  setProfileProperties = (props) => {
+    const id = this.persistence.getDistinctId();
+    this.sendRequest(
+      RequestType.SET_PROFILE_PROPERTIES,
+      { id, props }
+    );
   }
 
 
@@ -93,18 +103,30 @@ export default class GIAPLib {
   // type: EVENT || PROFILE
   sendRequest = (type, data) => {
     // Add request to the queue
+    this.persistence.enqueue({ type, data });
+
     console.log(type);
     console.log(data);
-    console.log(this.persistence.props);
-    this.persistence.enqueue({ type, data });
+    /* console.log(this.persistence.props); */
+    console.log(this.persistence.getQueue().requests);
   }
 
   /* SEND ALL REQUESTS CURRENTLY IN QUEUE */
   flush = async () => {
+    console.log('flushhhh');
+    const requests = this.persistence.getQueue().requests;
+    if (!requests) return;
+
+    this.isFlushing = true;
+    this.persistence.clearQueue();
+
+    const { token, apiUrl } = this;
+    const giapFetch = new RequestHelper(token, apiUrl);
+
     /* Group all consecutive 'EVENT' requests to send as one then the 'PROFILE'
     request then repeat the process */
     const events = [];
-    this.persistence.getQueue().requests.forEach(({ type, data }) => {
+    await asyncForEach(requests, async ({ type, data }) => {
       // if request is EVENT_EMITTING
       if (type === RequestType.TRACK) {
         events.push(data);
@@ -113,16 +135,29 @@ export default class GIAPLib {
 
       // otherwise
       // TODO: send all events in "events" array if available
+
       // TODO: send request
       switch (type) {
-        case RequestType.ALIAS:
+        case RequestType.ALIAS: {
+          const { userId, distinctId } = data;
+          await giapFetch.post('alias', { userId, distinctId });
+          break; }
+        case RequestType.IDENTIFY: {
+          const { userId, distinctId } = data;
+          await giapFetch.get(`alias/${userId}`,
+            { currentDistinctId: distinctId });
           break;
-        case RequestType.IDENTIFY:
+        }
+        case RequestType.SET_PROFILE_PROPERTIES: {
+          /* /profiles/:distinct_id */
+          const { id, props } = data;
+          await giapFetch.put(`profiles/${id}`, props);
           break;
-        case RequestType.SET_PROPERTIES:
-          break;
+        }
         default:
       }
     });
+
+    this.isFlushing = false;
   }
 }

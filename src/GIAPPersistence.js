@@ -55,11 +55,19 @@ export default class GIAPPersistence {
     this.persist();
   }
 
-  enqueue = (request) => { this.props.queue.requests.push(request); }
+  enqueue = (request) => {
+    this.props.queue.requests.push(request);
+    this.persist();
+  }
 
   getDistinctId = () => this.props.distinctId;
 
   getQueue = () => this.props.queue;
+
+  clearQueue = () => {
+    this.props.queue.requests = [];
+    this.persist();
+  };
 
   getPersistedProps = () => {
     const { queue, ...props } = this.props;
