@@ -47,6 +47,7 @@
     "no-shadow": 0,
     "no-plusplus": 0,
     "camelcase": 0,
+    "react/destructuring-assignment": "warn",
     "react/sort-comp": [
       1,
       {

@@ -46,7 +46,7 @@ export default class GIAPLib {
     // profile props: this.persistence.props
     // default info: addInfo(properties)
 
-    this.sendRequest(RequestType.EMIT_EVENT, {
+    this.sendRequest(RequestType.TRACK, {
       defaultProps: {
         name,
         ...prepareDefaultProps(this.persistence, this.config) },
@@ -58,7 +58,8 @@ export default class GIAPLib {
   alias = (userId) => {
     // register: userId
     this.persistence.update({ userId });
-    this.sendRequest(RequestType.CREATE_ALIAS, { userId });
+    this.sendRequest(RequestType.ALIAS, { userId });
+    this.identify(userId);
   }
 
 
@@ -67,10 +68,13 @@ export default class GIAPLib {
     // distinctId: get current distinct id from storage
     const distinctId = this.persistence.getDistinctId();
     // callback: update distinctId based on response
-    this.sendRequest(RequestType.GET_IDENTITY, {
+    this.sendRequest(RequestType.IDENTIFY, {
       userId,
       distinctId,
     });
+
+    // update distinctId
+    this.persistence.update({ distinctId: userId });
   }
 
 
@@ -81,6 +85,11 @@ export default class GIAPLib {
       distinctId: uuid(),
       userId: undefined,
     });
+  }
+
+  /* MODIFY PROFILE */
+  setProfileProperties = (id, props) => {
+    this.sendRequest(RequestType.SET_PROFILE_PROPERTIES, { id, props });
   }
 
 
@@ -101,7 +110,7 @@ export default class GIAPLib {
     const events = [];
     this.persistence.getQueue().requests.forEach(({ type, data }) => {
       // if request is EVENT_EMITTING
-      if (type === RequestType.EMIT_EVENT) {
+      if (type === RequestType.TRACK) {
         events.push(data);
         return;
       }
@@ -110,11 +119,11 @@ export default class GIAPLib {
       // TODO: send all events in "events" array if available
       // TODO: send request
       switch (type) {
-        case RequestType.CREATE_ALIAS:
+        case RequestType.ALIAS:
           break;
-        case RequestType.GET_IDENTITY:
+        case RequestType.IDENTIFY:
           break;
-        case RequestType.MODIFY_PROFILE:
+        case RequestType.SET_PROPERTIES:
           break;
         default:
       }
