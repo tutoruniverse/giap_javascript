@@ -1,9 +1,9 @@
 import { uuid } from 'uuidv4';
-import { prepareDefaultProps, asyncForEach, createEventsBatch } from './utils';
+import { prepareDefaultProps, createEventsBatch } from './utils';
 import RequestHelper from './utils/request';
 import Config from './configuration';
 import GIAPPersistence from './GIAPPersistence';
-import { EventName } from './constants/app';
+import { EventName, QUEUE_INTERVAL } from './constants/app';
 import RequestType from './constants/requestType';
 
 export default class GIAPLib {
@@ -19,10 +19,9 @@ export default class GIAPLib {
 
     // initialize this.persistence by new GIAPPersistence object
     this.persistence = new GIAPPersistence(Config.PERSISTENCE_NAME);
+    this.fetch = new RequestHelper(this.token, this.apiUrl);
 
     // setup profile:
-    //  - if distinctId exists in storage --> return
-    //  - else: registerOnce: distinctId = deviceId = uuid
     if (!this.persistence.getDistinctId()) {
       this.persistence.update({
         distinctId: uuid(),
@@ -40,16 +39,13 @@ export default class GIAPLib {
     // every INTERVAL: this._flush()
     setInterval(() => {
       if (!this.isFlushing) this.flush();
-    }, this.persistence.getQueue().interval);
+    }, QUEUE_INTERVAL);
   }
 
 
   /* EMIT EVENT */
   track = (name, properties) => {
-    // update properties with super-properties:
-    // profile props: this.persistence.props
-    // default info: addInfo(properties)
-
+    // update properties with default props
     this.sendRequest(RequestType.TRACK, {
       ...prepareDefaultProps(name, this.persistence),
       ...properties });
@@ -59,11 +55,11 @@ export default class GIAPLib {
   /* CREATE ALIAS */
   alias = (userId) => {
     const distinctId = this.persistence.getDistinctId();
-    this.persistence.update({ userId });
     this.sendRequest(
       RequestType.ALIAS,
       { userId, distinctId }
     );
+    this.persistence.update({ userId });
     this.identify(userId);
   }
 
@@ -99,69 +95,62 @@ export default class GIAPLib {
   }
 
 
-  /* ENQUEUE */
-  // type: EVENT || PROFILE
   sendRequest = (type, data) => {
     // Add request to the queue
     this.persistence.enqueue({ type, data });
 
     console.log(type);
     console.log(data);
-    /* console.log(this.persistence.props); */
-    console.log(this.persistence.getQueue().requests);
+    console.log(this.persistence.props.queue.requests);
   }
 
-  /* SEND ALL REQUESTS CURRENTLY IN QUEUE */
+  /* */
   flush = async () => {
     console.log('flushhhh');
-    const requests = this.persistence.getQueue().requests;
-    if (!requests) return;
-
     this.isFlushing = true;
-    this.persistence.clearQueue();
+    let request = this.persistence.dequeue();
+    if (!request) { return; }
 
-    const { token, apiUrl } = this;
-    const giapFetch = new RequestHelper(token, apiUrl);
-
-    /* Group all consecutive 'EVENT' requests to send as one then the 'PROFILE'
-    request then repeat the process */
     const events = [];
-    await asyncForEach(requests, async ({ type, data }, index) => {
-      // if request is EVENT_EMITTING
-      if (type === RequestType.TRACK) {
-        events.push(data);
-        // process to emit the events batch if current request is last of queue
-        if (index < requests.length - 1) return;
-      }
+    let next = this.persistence.peek();
+    while (next && next.type === RequestType.TRACK) {
+      events.push(request.data);
+      request = this.persistence.dequeue();
+      next = this.persistence.peek();
+    }
 
-      // otherwise
-      // TODO: send all events in "events" array if available
-      if (events.length) {
-        try {
-          await giapFetch.post('events', createEventsBatch(events));
-        } catch (e) {
-          console.log('Failed emitting events');
-          console.log(e);
-        }
-      }
+    /* SEND REQUEST */
+    const { fetch } = this;
 
-      // TODO: send request
+    // TODO: emit events if any at the beginning of queue
+    if (events.length) {
+      try {
+        await fetch.post('events', createEventsBatch(events));
+      } catch (e) {
+        console.log('Failed emitting events');
+        console.log(e);
+      }
+    } else {
+      // TODO: send request of another type
+      const { type, data } = request;
       try {
         switch (type) {
           case RequestType.ALIAS: {
             const { userId, distinctId } = data;
-            await giapFetch.post('alias', { userId, distinctId });
+            await fetch.post('alias', { userId, distinctId });
             break; }
+
           case RequestType.IDENTIFY: {
             const { userId, distinctId } = data;
-            await giapFetch.get(`alias/${userId}`,
+            await fetch.get(`alias/${userId}`,
               { currentDistinctId: distinctId });
             break;
           }
+
           case RequestType.SET_PROFILE_PROPERTIES: {
           /* /profiles/:distinct_id */
             const { id, props } = data;
-            await giapFetch.put(`profiles/${id}`, props);
+            await fetch.put(`profiles/${id}`, props);
             break;
           }
           default:
@@ -170,8 +159,8 @@ export default class GIAPLib {
         console.log(`Failed ${type}`);
         console.log(e);
       }
-    });
-
+    }
+    this.persistence.persist();
     this.isFlushing = false;
   }
 }

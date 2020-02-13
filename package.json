@@ -71,7 +71,8 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "src/**/*.{js,jsx,mjs}"
+      "src/**/*.{js,jsx,mjs}",
+      "!src/utils/caseConverter.js"
     ],
     "setupFiles": [
       "<rootDir>/config/polyfills.js"

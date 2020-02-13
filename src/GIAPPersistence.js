@@ -27,10 +27,6 @@ export default class GIAPPersistence {
     this.update({
       ...this.load(),
     });
-    console.log('constructor persistance');
-    console.log(this.name);
-    console.log(this.props);
-    console.log('---');
   }
 
   // register a set of super-props then persist the changes
@@ -62,7 +58,13 @@ export default class GIAPPersistence {
 
   getDistinctId = () => this.props.distinctId;
 
-  getQueue = () => this.props.queue;
+  dequeue = () => (this.props.queue.requests.length
+    ? this.props.queue.requests.shift()
+    : null);
+
+  peek = () => (this.props.queue.requests.length
+    ? this.props.queue.requests[0]
+    : null);
 
   clearQueue = () => {
     this.props.queue.requests = [];
