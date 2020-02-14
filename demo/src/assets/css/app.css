@@ -239,15 +239,6 @@ label {
 button {
     border-radius: 0; }
 
-/* line 337, node_modules/@gotit/ui_core/src/scss/modify/_reboot.scss */
-button {
-    border: none;
-    background: none; }
-
-/* line 346, node_modules/@gotit/ui_core/src/scss/modify/_reboot.scss */
-button:focus {
-    outline: none; }
-
 /* line 352, node_modules/@gotit/ui_core/src/scss/modify/_reboot.scss */
 input,
 button,
