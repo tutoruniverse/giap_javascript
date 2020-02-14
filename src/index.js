@@ -151,7 +151,6 @@ const alias = (userId) => {
     RequestType.ALIAS,
     { userId, distinctId }
   );
-  persistence.update({ userId });
   identify(userId);
 };
 

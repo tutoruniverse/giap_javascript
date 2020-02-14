@@ -3,7 +3,6 @@
  *    lib_version
  *    distinct_id
  *    device_id
- *    user_id
  *    initial_referrer
  *    initial_referring_domain
  *    queue
