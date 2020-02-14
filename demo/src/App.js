@@ -1,22 +1,12 @@
 import React, { Component } from 'react';
 import Modal from './Modal';
-import GIAPLib from '../../src';
+import GIAP from '../../src/index';
 
 export default class App extends Component {
   state= { modal: '' };
 
   componentDidMount() {
-    this.giapLib.initialize('tokenlsakjdflksjdfl', 'https://www.random-server-url.com/');
-  }
-
-  giapLib = new GIAPLib();
-
-  onInputChange = () => {
-
-  }
-
-  onSubmitClick = () => {
-
+    GIAP.initialize('tokenlsakjdflksjdfl', 'https://www.random-server-url.com/');
   }
 
   showModal = () => {
@@ -29,27 +19,27 @@ export default class App extends Component {
       case 'identify':
         fields = ['userId'];
         onSubmitClick = ({ userId }) => {
-          this.giapLib.identify(userId);
+          GIAP.identify(userId);
         };
         break;
       case 'alias':
         fields = ['userId'];
         onSubmitClick = ({ userId }) => {
-          this.giapLib.alias(userId);
+          GIAP.alias(userId);
         };
         break;
       case 'track':
         fields = ['eventName', 'data'];
         onSubmitClick = ({ eventName, data }) => {
           if (!data) {
-            this.giapLib.track(eventName);
+            GIAP.track(eventName);
             return;
           }
           try {
             const objData = JSON.parse(data);
-            this.giapLib.track(eventName, objData);
+            GIAP.track(eventName, objData);
           } catch {
-            this.giapLib.track(eventName);
+            GIAP.track(eventName);
           }
         };
         break;
@@ -94,7 +84,7 @@ export default class App extends Component {
         <button
           type="submit"
           onClick={() => {
-            this.giapLib.reset();
+            GIAP.reset();
             this.setState({ modal: '' });
           }}
         >
