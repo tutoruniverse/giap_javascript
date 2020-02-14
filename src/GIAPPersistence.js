@@ -9,14 +9,10 @@
  *    queue
  */
 import DeviceInfo from './utils/deviceInfo';
-import { QUEUE_INTERVAL } from './constants/app';
 
 export default class GIAPPersistence {
   props = {
-    queue: {
-      interval: QUEUE_INTERVAL,
-      requests: [],
-    },
+    queue: [],
   }
 
   constructor(name) {
@@ -51,25 +47,13 @@ export default class GIAPPersistence {
     this.persist();
   }
 
-  enqueue = (request) => {
-    this.props.queue.requests.push(request);
-    this.persist();
+  updateQueue = (request) => {
+    this.update({ queue: [...this.getQueue(), request] });
   }
 
   getDistinctId = () => this.props.distinctId;
 
-  dequeue = () => (this.props.queue.requests.length
-    ? this.props.queue.requests.shift()
-    : null);
-
-  peek = () => (this.props.queue.requests.length
-    ? this.props.queue.requests[0]
-    : null);
-
-  clearQueue = () => {
-    this.props.queue.requests = [];
-    this.persist();
-  };
+  getQueue = () => this.props.queue;
 
   getPersistedProps = () => {
     const { queue, ...props } = this.props;
@@ -87,4 +71,12 @@ export default class GIAPPersistence {
       return null;
     }
   }
+
+  dequeue = () => (this.props.queue.length
+    ? this.props.queue.shift()
+    : null);
+
+  peek = () => (this.props.queue.length
+    ? this.props.queue[0]
+    : null);
 }

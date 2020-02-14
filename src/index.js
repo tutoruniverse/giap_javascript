@@ -97,26 +97,26 @@ export default class GIAPLib {
 
   sendRequest = (type, data) => {
     // Add request to the queue
-    this.persistence.enqueue({ type, data });
+    this.enqueue({ type, data });
 
     console.log(type);
     console.log(data);
-    console.log(this.persistence.props.queue.requests);
+    console.log(this.persistence.getQueue());
   }
 
   /* */
   flush = async () => {
     console.log('flushhhh');
     this.isFlushing = true;
-    let request = this.persistence.dequeue();
+    let request = this.dequeue();
     if (!request) { return; }
 
     const events = [];
-    let next = this.persistence.peek();
+    let next = this.peek();
     while (next && next.type === RequestType.TRACK) {
       events.push(request.data);
-      request = this.persistence.dequeue();
-      next = this.persistence.peek();
+      request = this.dequeue();
+      next = this.peek();
     }
 
     /* SEND REQUEST */
@@ -163,4 +163,12 @@ export default class GIAPLib {
     this.persistence.persist();
     this.isFlushing = false;
   }
+
+  enqueue = (request) => {
+    this.persistence.updateQueue(request);
+  }
+
+  dequeue = () => this.persistence.dequeue()
+
+  peek = () => this.persistence.peek()
 }
