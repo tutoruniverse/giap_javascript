@@ -19,9 +19,7 @@ export default class GIAPPersistence {
     this.name = name;
 
     // load persisted data from localStorage
-    this.update({
-      ...this.load(),
-    });
+    this.load();
   }
 
   // register a set of super-props then persist the changes
@@ -65,9 +63,11 @@ export default class GIAPPersistence {
 
   load = () => {
     try {
-      return JSON.parse(localStorage.getItem(this.name));
-    } catch {
-      return null;
+      this.update({
+        ...JSON.parse(localStorage.getItem(this.name)),
+      });
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -78,4 +78,16 @@ export default class GIAPPersistence {
   peek = () => (this.props.queue.length
     ? this.props.queue[0]
     : null);
+
+/*   getRequestsBatch = (type) => {
+    if (!this.peek() || this.peek().type !== type) return null;
+
+    let i = 0;
+    const res = [];
+    while (this.getQueue()[i].type === type) {
+      res.push(this.getQueue()[i].data);
+      ++i;
+    }
+    return res;
+  } */
 }

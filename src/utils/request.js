@@ -15,18 +15,25 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     ...customHeaders,
     Authorization: `Bearer ${token}`,
   };
-
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: (body ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body)) : undefined),
-  });
-
-  if (res.ok) {
-    return (res.json())
-      .then(res => CaseConverter.snakeCaseToCamelCase(res));
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers,
+      body: (body ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body)) : undefined),
+    });
+  } catch (e) {
+    console.log('catched');
+    console.log(e);
   }
-  throw res.json();
+
+  if (!res || !res.status || res.status > 499) {
+    return { retry: true };
+  }
+
+  return (res.json())
+    .then(res => ({ retry: false,
+      data: CaseConverter.snakeCaseToCamelCase(res) }));
 };
 
 export default class RequestHelper {

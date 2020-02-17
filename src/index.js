@@ -11,6 +11,7 @@ let apiUrl;
 let persistence;
 let isFlushing;
 let libFetch;
+let isInitialized = false;
 
 const enqueue = (request) => {
   persistence.updateQueue(request);
@@ -41,6 +42,8 @@ const flush = async () => {
   /* SEND REQUEST */
 
   let request = dequeue();
+  let res;
+
   if (request.type === RequestType.TRACK) {
     // TODO: emit events if any at the beginning of queue
     const events = [request.data];
@@ -48,50 +51,49 @@ const flush = async () => {
       request = dequeue();
       events.push(request.data);
     }
-
-    try {
-      await libFetch.post('events', createEventsBatch(events));
-    } catch (e) {
-      console.log('Failed emitting events');
-      console.log(e);
-    }
+    res = await libFetch.post('events', createEventsBatch(events));
   } else {
-    // TODO: send request of another type
     const { type, data } = request;
-    try {
-      switch (type) {
-        case RequestType.ALIAS: {
-          const { userId, distinctId } = data;
-          await libFetch.post('alias', { userId, distinctId });
-          break; }
+    switch (type) {
+      case RequestType.ALIAS: {
+        const { userId, distinctId } = data;
+        res = await libFetch.post('alias', { userId, distinctId });
+        break; }
 
-        case RequestType.IDENTIFY: {
-          const { userId, distinctId } = data;
-          await libFetch.get(`alias/${userId}`,
-            { currentDistinctId: distinctId });
-          break;
-        }
-
-        case RequestType.SET_PROFILE_PROPERTIES: {
-          /* /profiles/:distinct_id */
-          const { id, props } = data;
-          await libFetch.put(`profiles/${id}`, props);
-          break;
-        }
-        default:
+      case RequestType.IDENTIFY: {
+        const { userId, distinctId } = data;
+        res = await libFetch.get(`alias/${userId}`,
+          { currentDistinctId: distinctId });
+        break;
       }
-    } catch (e) {
-      console.log(`Failed ${type}`);
-      console.log(e);
+
+      case RequestType.SET_PROFILE_PROPERTIES: {
+        const { id, props } = data;
+        res = await libFetch.put(`profiles/${id}`, props);
+        break;
+      }
+      default:
     }
   }
-  persistence.persist();
+  console.log(res);
+  if (!res.retry) {
+    console.log('persists');
+    persistence.persist();
+  } else {
+    persistence.load();
+  }
+  /* QUEUE AFTER FLUSHING */
+  console.group('queue after flushing');
+  persistence.getQueue().forEach(request => console.log(request.type));
+  console.groupEnd('queue after flushing');
+  /*  */
   isFlushing = false;
   console.groupEnd('Flushing');
 };
 
 /* EMIT EVENT */
 const track = (name, properties) => {
+  if (!isInitialized) throw Error('Analytics library not initialzied');
   // update properties with default props
   sendRequest(RequestType.TRACK, {
     ...prepareDefaultProps(name, persistence),
@@ -121,6 +123,9 @@ const initialize = (libToken, serverUrl) => {
   // initial referrer
   persistence.updateReferrer(window.document.referrer);
 
+  // update initialized flag
+  isInitialized = true;
+
   // emit event: track('initialization')
   track(EventName.INITIALIZATION);
 
@@ -133,6 +138,7 @@ const initialize = (libToken, serverUrl) => {
 
 /* GET IDENTITY */
 const identify = (userId) => {
+  if (!isInitialized) throw Error('Analytics library not initialzied');
   const distinctId = persistence.getDistinctId();
   sendRequest(
     RequestType.IDENTIFY,
@@ -146,6 +152,7 @@ const identify = (userId) => {
 
 /* CREATE ALIAS */
 const alias = (userId) => {
+  if (!isInitialized) throw Error('Analytics library not initialzied');
   const distinctId = persistence.getDistinctId();
   sendRequest(
     RequestType.ALIAS,
@@ -157,6 +164,7 @@ const alias = (userId) => {
 
 /* RESET PROFILE */
 const reset = () => {
+  if (!isInitialized) throw Error('Analytics library not initialzied');
   persistence.update({
     distinctId: uuid(),
     userId: undefined,
@@ -165,6 +173,7 @@ const reset = () => {
 
 /* MODIFY PROFILE */
 const setProfileProperties = (props) => {
+  if (!isInitialized) throw Error('Analytics library not initialzied');
   const id = persistence.getDistinctId();
   sendRequest(
     RequestType.SET_PROFILE_PROPERTIES,

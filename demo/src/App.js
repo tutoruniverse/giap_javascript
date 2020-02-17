@@ -6,7 +6,7 @@ export default class App extends Component {
   state= { modal: '' };
 
   componentDidMount() {
-    GIAP.initialize('tokenlsakjdflksjdfl', 'https://www.random-server-url.com/');
+    GIAP.initialize('tokenlsakjdflksjdfl', 'http://localhost:3000/');
   }
 
   showModal = () => {

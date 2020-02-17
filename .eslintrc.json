@@ -48,6 +48,7 @@
     "no-plusplus": 0,
     "camelcase": 0,
     "react/destructuring-assignment": "warn",
+    "no-await-in-loop": "warn",
     "react/sort-comp": [
       1,
       {
