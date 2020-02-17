@@ -1,5 +1,7 @@
 const toCamelCase = snakeCase => snakeCase.replace(/_[a-z]/g, characters => characters[1].toUpperCase());
 
+const toCamelCaseWithPrefix = snakeCase => snakeCase.replace(/.(_[a-z])/g, characters => characters[1].toUpperCase());
+
 const toSnakeCase = camelCase => camelCase.replace(/[A-Z]/g, character => `_${character.toLowerCase()}`);
 
 const convert = (obj, fn) => {
@@ -38,6 +40,11 @@ class CaseConverter {
   // snake_case to camelCase. For example, {asker_id: 1} -> {askerId: 1}
   static snakeCaseToCamelCase(obj) {
     return convert(obj, toCamelCase);
+  }
+
+  // snake_case to camelCase. For example, {asker_id: 1} -> {askerId: 1}
+  static snakeCaseToCamelCaseWithPrefix(obj) {
+    return convert(obj, toCamelCaseWithPrefix);
   }
 
   // camelCase to snake_case. For example, {askerId: 1} -> {asker_id: 1}

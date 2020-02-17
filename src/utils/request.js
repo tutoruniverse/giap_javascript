@@ -20,7 +20,7 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     res = await fetch(url, {
       method,
       headers,
-      body: (body ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body)) : undefined),
+      body: (body ? JSON.stringify(CaseConverter.snakeCaseToCamelCaseWithPrefix(body)) : undefined),
     });
   } catch (e) {
     console.log('catched');
