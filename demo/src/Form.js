@@ -1,16 +1,22 @@
 import React, { Component } from 'react';
 
-export default class Modal extends Component {
+export default class Form extends Component {
   state = {}
 
   onInputChange = ({ target }) => {
     this.setState({ [target.name]: target.value });
   }
 
-  render() {
+  onSubmitClick = () => {
     const { fields, onSubmitClick } = this.props;
+    onSubmitClick(this.state);
+    fields.forEach((field) => { this.setState({ [field]: '' }); });
+  }
+
+  render() {
+    const { fields } = this.props;
     return (
-      <div className="modallll">
+      <div className="form">
         {fields.map(field => (
           <div>
             <textarea
@@ -25,9 +31,7 @@ export default class Modal extends Component {
         ))}
         <button
           type="submit"
-          onClick={() => {
-            onSubmitClick(this.state);
-          }}
+          onClick={this.onSubmitClick}
         >
         Submit
         </button>

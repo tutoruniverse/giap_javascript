@@ -1,59 +1,57 @@
 import React, { Component } from 'react';
-import Modal from './Modal';
+import Form from './Form';
 import GIAP from '../../src/index';
 
 export default class App extends Component {
-  state= { modal: '' };
+  state = { form: '', isSignedIn: false };
 
   componentDidMount() {
     GIAP.initialize('tokenlsakjdflksjdfl', 'http://localhost:3000/');
   }
 
-  showModal = () => {
-    const { modal } = this.state;
-    if (!modal) return '';
+  onVisit = ({ economyGroup }) => {
+    GIAP.track('VISIT', { economyGroup: parseInt(economyGroup) });
+  };
+
+  onSignUp = ({ email }) => {
+    GIAP.alias(email);
+    GIAP.setProfileProperties({ email });
+    this.setState({ isSignedIn: true });
+  };
+
+  onSignOut = () => {
+    GIAP.reset();
+    this.setState({ form: '', isSignedIn: false });
+  }
+
+  onAsk = ({ problemText }) => {
+    GIAP.track('ASK', { problemText });
+  }
+
+  showForm = () => {
+    const { form } = this.state;
+    if (!form) return '';
 
     let fields = [];
     let onSubmitClick;
-    switch (modal) {
-      case 'identify':
-        fields = ['userId'];
-        onSubmitClick = ({ userId }) => {
-          GIAP.identify(userId);
-        };
+    switch (form) {
+      case 'visit':
+        fields = ['economyGroup'];
+        onSubmitClick = this.onVisit;
         break;
-      case 'alias':
-        fields = ['userId'];
-        onSubmitClick = ({ userId }) => {
-          GIAP.alias(userId);
-        };
+      case 'signup':
+        fields = ['email'];
+        onSubmitClick = this.onSignUp;
         break;
-      case 'track':
-        fields = ['eventName', 'data'];
-        onSubmitClick = ({ eventName, data }) => {
-          if (!data) {
-            GIAP.track(eventName);
-            return;
-          }
-          try {
-            const objData = JSON.parse(data);
-            GIAP.track(eventName, objData);
-          } catch {
-            GIAP.track(eventName);
-          }
-        };
-        break;
-      case 'setProfileProperties':
-        fields = ['propertyName', 'value'];
-        onSubmitClick = ({ propertyName, value }) => {
-          GIAP.setProfileProperties({ [propertyName]: value });
-        };
+      case 'ask':
+        fields = ['problemText'];
+        onSubmitClick = this.onAsk;
         break;
       default:
         fields = [];
     }
     return (
-      <Modal
+      <Form
         fields={fields}
         onSubmitClick={onSubmitClick}
       />
@@ -61,56 +59,49 @@ export default class App extends Component {
   }
 
   render() {
-    const { modal } = this.state;
+    const { form, isSignedIn } = this.state;
     return (
       <div id="giap-app-container">
         <div id="button-container">
           <button
-            className={modal === 'track' ? 'button-active' : ''}
+            className={form === 'visit' ? 'button-active' : ''}
             type="submit"
             onClick={() => {
-              this.setState({ modal: 'track' });
+              this.setState({ form: 'visit' });
             }}
           >
-          Track
+          Visit
           </button>
-          <button
-            className={modal === 'identify' ? 'button-active' : ''}
-            type="submit"
-            onClick={() => {
-              this.setState({ modal: 'identify' });
-            }}
-          >
-          Sign In
-          </button>
-          <button
-            className={modal === 'alias' ? 'button-active' : ''}
-            type="submit"
-            onClick={() => {
-              this.setState({ modal: 'alias' });
-            }}
-          >
-          Sign Up
-          </button>
-          <button
-            type="submit"
-            onClick={() => {
-              GIAP.reset();
-              this.setState({ modal: '' });
-            }}
-          >
+          {!isSignedIn ? (
+            <button
+              className={form === 'signup' ? 'button-active' : ''}
+              type="submit"
+              onClick={() => {
+                this.setState({ form: 'signup' });
+              }}
+            >
+              Sign Up
+            </button>
+          )
+            : (
+              <button
+                type="submit"
+                onClick={this.onSignOut}
+              >
           Sign Out
-          </button>
+              </button>
+            )}
           <button
+            className={form === 'ask' ? 'button-active' : ''}
             type="submit"
             onClick={() => {
-              this.setState({ modal: 'setProfileProperties' });
+              this.setState({ form: 'ask' });
             }}
           >
-          Modify Profile
+          Ask
           </button>
         </div>
-        {this.showModal()}
+        {this.showForm()}
       </div>
     );
   }

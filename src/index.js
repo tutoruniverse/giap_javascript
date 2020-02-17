@@ -3,7 +3,7 @@ import { prepareDefaultProps, createEventsBatch } from './utils';
 import RequestHelper from './utils/request';
 import Config from './configuration';
 import GIAPPersistence from './GIAPPersistence';
-import { EventName, QUEUE_INTERVAL } from './constants/app';
+import { QUEUE_INTERVAL } from './constants/app';
 import RequestType from './constants/requestType';
 
 let token;
