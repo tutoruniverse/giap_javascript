@@ -126,9 +126,6 @@ const initialize = (libToken, serverUrl) => {
   // update initialized flag
   isInitialized = true;
 
-  // emit event: track('initialization')
-  track(EventName.INITIALIZATION);
-
   // setIntervals:
   // every INTERVAL: _flush()
   setInterval(() => {
