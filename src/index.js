@@ -116,6 +116,11 @@ const initialize = (libToken, serverUrl) => {
   if (!persistence.getDistinctId()) {
     persistence.update({
       distinctId: uuid(),
+    });
+  }
+
+  if (!persistence.getDeviceId()) {
+    persistence.update({
       deviceId: uuid(),
     });
   }
@@ -164,7 +169,6 @@ const reset = () => {
   if (!isInitialized) throw Error('Analytics library not initialzied');
   persistence.update({
     distinctId: uuid(),
-    userId: undefined,
   });
 };
 

@@ -50,6 +50,8 @@ export default class GIAPPersistence {
 
   getDistinctId = () => this.props.distinctId;
 
+  getDeviceId = () => this.props.deviceId;
+
   getQueue = () => this.props.queue;
 
   getPersistedProps = () => {
@@ -78,16 +80,4 @@ export default class GIAPPersistence {
   peek = () => (this.props.queue.length
     ? this.props.queue[0]
     : null);
-
-/*   getRequestsBatch = (type) => {
-    if (!this.peek() || this.peek().type !== type) return null;
-
-    let i = 0;
-    const res = [];
-    while (this.getQueue()[i].type === type) {
-      res.push(this.getQueue()[i].data);
-      ++i;
-    }
-    return res;
-  } */
 }
