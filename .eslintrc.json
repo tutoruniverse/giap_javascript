@@ -49,6 +49,7 @@
     "camelcase": 0,
     "react/destructuring-assignment": "warn",
     "no-await-in-loop": "warn",
+    "react/button-has-type": "0",
     "react/sort-comp": [
       1,
       {

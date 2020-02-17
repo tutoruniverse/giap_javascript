@@ -16,7 +16,12 @@ export default class App extends Component {
   onSignUp = ({ email }) => {
     GIAP.alias(email);
     GIAP.setProfileProperties({ email });
-    this.setState({ isSignedIn: true });
+    this.setState({ form: '', isSignedIn: true });
+  };
+
+  onSignIp = ({ email }) => {
+    GIAP.identify(email);
+    this.setState({ form: '', isSignedIn: true });
   };
 
   onSignOut = () => {
@@ -26,6 +31,10 @@ export default class App extends Component {
 
   onAsk = ({ problemText }) => {
     GIAP.track('ASK', { problemText });
+  }
+
+  onSetFullName = ({ fullName }) => {
+    GIAP.setProfileProperties({ fullName });
   }
 
   showForm = () => {
@@ -43,9 +52,17 @@ export default class App extends Component {
         fields = ['email'];
         onSubmitClick = this.onSignUp;
         break;
+      case 'signIn':
+        fields = ['email'];
+        onSubmitClick = this.onSignIp;
+        break;
       case 'ask':
         fields = ['problemText'];
         onSubmitClick = this.onAsk;
+        break;
+      case 'setFullName':
+        fields = ['fullName'];
+        onSubmitClick = this.onSetFullName;
         break;
       default:
         fields = [];
@@ -63,43 +80,59 @@ export default class App extends Component {
     return (
       <div id="giap-app-container">
         <div id="button-container">
-          <button
-            className={form === 'visit' ? 'button-active' : ''}
-            type="submit"
-            onClick={() => {
-              this.setState({ form: 'visit' });
-            }}
-          >
-          Visit
-          </button>
           {!isSignedIn ? (
-            <button
-              className={form === 'signup' ? 'button-active' : ''}
-              type="submit"
-              onClick={() => {
-                this.setState({ form: 'signup' });
-              }}
-            >
+            <React.Fragment>
+              <button
+                className={form === 'visit' ? 'button-active' : ''}
+                onClick={() => {
+                  this.setState({ form: 'visit' });
+                }}
+              >
+              Visit
+              </button>
+              <button
+                className={form === 'signup' ? 'button-active' : ''}
+                onClick={() => {
+                  this.setState({ form: 'signup' });
+                }}
+              >
               Sign Up
-            </button>
+              </button>
+              <button
+                className={form === 'signIn' ? 'button-active' : ''}
+                onClick={() => {
+                  this.setState({ form: 'signIn' });
+                }}
+              >
+              Sign In
+              </button>
+            </React.Fragment>
           )
             : (
-              <button
-                type="submit"
-                onClick={this.onSignOut}
-              >
-          Sign Out
-              </button>
+              <React.Fragment>
+                <button
+                  onClick={this.onSignOut}
+                >
+                Sign Out
+                </button>
+                <button
+                  className={form === 'ask' ? 'button-active' : ''}
+                  onClick={() => {
+                    this.setState({ form: 'ask' });
+                  }}
+                >
+                Ask
+                </button>
+                <button
+                  className={form === 'setFullName' ? 'button-active' : ''}
+                  onClick={() => {
+                    this.setState({ form: 'setFullName' });
+                  }}
+                >
+                Set Full Name
+                </button>
+              </React.Fragment>
             )}
-          <button
-            className={form === 'ask' ? 'button-active' : ''}
-            type="submit"
-            onClick={() => {
-              this.setState({ form: 'ask' });
-            }}
-          >
-          Ask
-          </button>
         </div>
         {this.showForm()}
       </div>
