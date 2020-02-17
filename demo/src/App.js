@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Form from './Form';
 import GIAP from '../../src/index';
+import { EventName } from './constants';
 
 export default class App extends Component {
   state = { form: '', isSignedIn: false };
@@ -10,7 +11,7 @@ export default class App extends Component {
   }
 
   onVisit = ({ economyGroup }) => {
-    GIAP.track('VISIT', { economyGroup: parseInt(economyGroup) });
+    GIAP.track(EventName.VISIT, { economyGroup: parseInt(economyGroup) });
   };
 
   onSignUp = ({ email }) => {
@@ -30,7 +31,7 @@ export default class App extends Component {
   }
 
   onAsk = ({ problemText }) => {
-    GIAP.track('ASK', { problemText });
+    GIAP.track(EventName.ASK, { problemText });
   }
 
   onSetFullName = ({ fullName }) => {

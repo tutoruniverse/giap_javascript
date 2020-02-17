@@ -25,10 +25,10 @@ const sendRequest = (type, data) => {
   // Add request to the queue
   enqueue({ type, data });
 
-  console.log(`%c add request ${type}`, 'color: blue');
+  console.log(`%cadd request ${type}`, 'color: blue; font-weight: bold');
   console.log(data);
   console.group('%cqueue', 'color: green');
-  persistence.getQueue().forEach(request => console.log(request.type));
+  console.log(persistence.getQueue().reduce((res, request) => `${res}  ${request.type}`, ''));
   console.groupEnd('queue');
 };
 
@@ -77,18 +77,19 @@ const flush = async () => {
   }
   console.log(res);
   if (!res.retry) {
-    console.log('persists');
     persistence.persist();
   } else {
     persistence.load();
   }
-  /* QUEUE AFTER FLUSHING */
-  console.group('queue after flushing');
-  persistence.getQueue().forEach(request => console.log(request.type));
-  console.groupEnd('queue after flushing');
-  /*  */
+
   isFlushing = false;
   console.groupEnd('Flushing');
+
+  /* QUEUE AFTER FLUSHING */
+  console.group('%cqueue after flushing', 'color: red');
+  console.log(persistence.getQueue().reduce((res, request) => `${res}  ${request.type}`, ''));
+  console.groupEnd('queue after flushing');
+  /*  */
 };
 
 /* EMIT EVENT */
