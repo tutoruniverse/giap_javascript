@@ -1,6 +1,8 @@
 import { uuid } from 'uuidv4';
+
 import prepareDefaultProps from './utils/defaultProps';
 import RequestHelper from './utils/request';
+import createLogger from './utils/logger';
 import GIAPPersistence from './persistence';
 import { QUEUE_INTERVAL } from './constants/lib';
 import RequestType from './constants/requestType';
@@ -11,6 +13,7 @@ let persistence;
 let isFlushing;
 let libFetch;
 let isInitialized = false;
+let logger;
 
 const enqueue = (request) => {
   /* isFlushing: boolean: help to decide whether or not to separate
@@ -30,15 +33,15 @@ const sendRequest = (type, data) => {
   // Add request to the queue
   enqueue({ type, data });
 
-  console.log(`%cadd request ${type}`, 'color: blue; font-weight: bold');
-  console.log(data);
-  console.group('%cqueue', 'color: green');
-  console.log(persistence.getQueue().reduce(
+  logger.log(`%cadd request ${type}`, 'color: blue; font-weight: bold');
+  logger.log(data);
+  logger.group('%cqueue', 'color: green');
+  logger.log(persistence.getQueue().reduce(
     (res, { type, data }) => (type === RequestType.TRACK
       ? `${res}  ${type}[${data.length}]`
       : `${res}  ${type}`),
     ''));
-  console.groupEnd('queue');
+  logger.groupEnd('queue');
 };
 
 /* */
@@ -46,7 +49,7 @@ const flush = async () => {
   const request = peek();
   if (!request) { return; }
 
-  console.group('FLUSHING');
+  logger.group('FLUSHING');
   isFlushing = true;
 
   /* SEND REQUEST */
@@ -78,22 +81,22 @@ const flush = async () => {
     }
     default:
   }
-  console.log(res);
+  logger.log(res);
   if (!res.retry) {
     dequeue();
   }
 
   isFlushing = false;
-  console.groupEnd('Flushing');
+  logger.groupEnd('Flushing');
 
   /* QUEUE AFTER FLUSHING */
-  console.group('%cqueue after flushing', 'color: red');
-  console.log(persistence.getQueue().reduce(
+  logger.group('%cqueue after flushing', 'color: red');
+  logger.log(persistence.getQueue().reduce(
     (res, { type, data }) => (type === RequestType.TRACK
       ? `${res}  ${type}[${data.length}]`
       : `${res}  ${type}`),
     ''));
-  console.groupEnd('queue after flushing');
+  logger.groupEnd('queue after flushing');
   /*  */
 };
 
@@ -108,12 +111,13 @@ const track = (name, properties) => {
 };
 
 /* INITIALIZE */
-const initialize = (libToken, serverUrl) => {
+const initialize = (libToken, serverUrl, enableLog = false) => {
   // store token to config
   token = libToken;
   apiUrl = serverUrl;
 
   isFlushing = false;
+  logger = createLogger(enableLog);
 
   // initialize persistence by new GIAPPersistence object
   persistence = new GIAPPersistence();

@@ -22,11 +22,10 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
       body: (body ? JSON.stringify(CaseConverter.snakeCaseToCamelCaseWithPrefix(body)) : undefined),
     });
   } catch (e) {
-    console.log('catched');
-    console.log(e);
+    // pass
   }
 
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  /* await new Promise(resolve => setTimeout(resolve, 2000)); */
 
   if (!res || !res.status || res.status > 499) {
     return { retry: true };
