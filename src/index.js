@@ -13,7 +13,10 @@ let libFetch;
 let isInitialized = false;
 
 const enqueue = (request) => {
-  persistence.updateQueue(request);
+  /* isFlushing: boolean: help to decide whether or not to separate
+  new TRACK events added during flushing to a new batch
+  */
+  persistence.updateQueue(request, isFlushing);
 };
 
 const dequeue = () => {
@@ -98,9 +101,10 @@ const flush = async () => {
 const track = (name, properties) => {
   if (!isInitialized) throw Error('Analytics library not initialzied');
   // update properties with default props
-  sendRequest(RequestType.TRACK, {
-    ...prepareDefaultProps(name, persistence),
-    ...properties });
+  sendRequest(RequestType.TRACK,
+    { ...prepareDefaultProps(name, persistence),
+      ...properties },
+    isFlushing);
 };
 
 /* INITIALIZE */

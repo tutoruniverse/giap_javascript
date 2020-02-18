@@ -8,7 +8,7 @@ const defaultHeaders = {
 };
 
 const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl) => {
-  await new Promise(resolve => setTimeout(resolve, 50));
+  await new Promise(resolve => setTimeout(resolve, 2000));
   const url = apiUrl + endpoint;
   const headers = {
     ...defaultHeaders,

@@ -43,16 +43,24 @@ export default class GIAPPersistence {
     this.persist();
   }
 
-  updateQueue = (request) => {
+  updateQueue = (request, isFlushing) => {
     if (request.type === RequestType.TRACK) {
       // group TRACK requests at rear as a batch
       let batchRequest = request;
+
       if (this.peekBack() && this.peekBack().type === RequestType.TRACK) {
-        batchRequest = this.popBack();
-        batchRequest.data = [...batchRequest.data, request.data];
-      } else {
-        batchRequest.data = [batchRequest.data];
+        /* Special case: the TRACK batch at rear is also
+        the one being flushed. */
+        if (!(isFlushing && this.getQueue().length === 1)) {
+          batchRequest = this.popBack();
+          batchRequest.data = [...batchRequest.data, request.data];
+          this.update({ queue: [...this.getQueue(), batchRequest] });
+          return;
+        }
       }
+
+      // create new TRACK batch
+      batchRequest.data = [batchRequest.data];
       this.update({ queue: [...this.getQueue(), batchRequest] });
       return;
     }
