@@ -1,5 +1,4 @@
 import { uuid } from 'uuidv4';
-import { createEventsBatch } from './utils/object';
 import prepareDefaultProps from './utils/defaultProps';
 import RequestHelper from './utils/request';
 import GIAPPersistence from './persistence';
@@ -17,9 +16,12 @@ const enqueue = (request) => {
   persistence.updateQueue(request);
 };
 
-const dequeue = () => persistence.dequeue();
+const dequeue = () => {
+  persistence.popFront();
+  persistence.persist();
+};
 
-const peek = () => persistence.peek();
+const peek = () => persistence.peekFront();
 
 const sendRequest = (type, data) => {
   // Add request to the queue
@@ -28,58 +30,54 @@ const sendRequest = (type, data) => {
   console.log(`%cadd request ${type}`, 'color: blue; font-weight: bold');
   console.log(data);
   console.group('%cqueue', 'color: green');
-  console.log(persistence.getQueue().reduce((res, request) => `${res}  ${request.type}`, ''));
+  console.log(persistence.getQueue().reduce(
+    (res, { type, data }) => (type === RequestType.TRACK
+      ? `${res}  ${type}[${data.length}]`
+      : `${res}  ${type}`),
+    ''));
   console.groupEnd('queue');
 };
 
 /* */
 const flush = async () => {
-  if (!peek()) { return; }
+  const request = peek();
+  if (!request) { return; }
 
   console.group('FLUSHING');
   isFlushing = true;
 
   /* SEND REQUEST */
 
-  let request = dequeue();
   let res;
+  const { type, data } = request;
 
-  if (request.type === RequestType.TRACK) {
-    // TODO: emit events if any at the beginning of queue
-    const events = [request.data];
-    while (peek() && peek().type === RequestType.TRACK) {
-      request = dequeue();
-      events.push(request.data);
+  switch (type) {
+    case RequestType.TRACK: {
+      res = await libFetch.post('events', { events: data });
+      break;
     }
-    res = await libFetch.post('events', createEventsBatch(events));
-  } else {
-    const { type, data } = request;
-    switch (type) {
-      case RequestType.ALIAS: {
-        const { userId, distinctId } = data;
-        res = await libFetch.post('alias', { userId, distinctId });
-        break; }
+    case RequestType.ALIAS: {
+      const { userId, distinctId } = data;
+      res = await libFetch.post('alias', { userId, distinctId });
+      break; }
 
-      case RequestType.IDENTIFY: {
-        const { userId, distinctId } = data;
-        res = await libFetch.get(`alias/${userId}`,
-          { currentDistinctId: distinctId });
-        break;
-      }
-
-      case RequestType.SET_PROFILE_PROPERTIES: {
-        const { id, props } = data;
-        res = await libFetch.put(`profiles/${id}`, props);
-        break;
-      }
-      default:
+    case RequestType.IDENTIFY: {
+      const { userId, distinctId } = data;
+      res = await libFetch.get(`alias/${userId}`,
+        { currentDistinctId: distinctId });
+      break;
     }
+
+    case RequestType.SET_PROFILE_PROPERTIES: {
+      const { id, props } = data;
+      res = await libFetch.put(`profiles/${id}`, props);
+      break;
+    }
+    default:
   }
   console.log(res);
   if (!res.retry) {
-    persistence.persist();
-  } else {
-    persistence.load();
+    dequeue();
   }
 
   isFlushing = false;
@@ -87,7 +85,11 @@ const flush = async () => {
 
   /* QUEUE AFTER FLUSHING */
   console.group('%cqueue after flushing', 'color: red');
-  console.log(persistence.getQueue().reduce((res, request) => `${res}  ${request.type}`, ''));
+  console.log(persistence.getQueue().reduce(
+    (res, { type, data }) => (type === RequestType.TRACK
+      ? `${res}  ${type}[${data.length}]`
+      : `${res}  ${type}`),
+    ''));
   console.groupEnd('queue after flushing');
   /*  */
 };

@@ -9,6 +9,7 @@
  */
 import { getReferringDomain } from './utils/deviceInfo';
 import { PERSISTENCE_NAME } from './constants/lib';
+import RequestType from './constants/requestType';
 
 export default class GIAPPersistence {
   props = {
@@ -43,6 +44,19 @@ export default class GIAPPersistence {
   }
 
   updateQueue = (request) => {
+    if (request.type === RequestType.TRACK) {
+      // group TRACK requests at rear as a batch
+      let batchRequest = request;
+      if (this.peekBack() && this.peekBack().type === RequestType.TRACK) {
+        batchRequest = this.popBack();
+        batchRequest.data = [...batchRequest.data, request.data];
+      } else {
+        batchRequest.data = [batchRequest.data];
+      }
+      this.update({ queue: [...this.getQueue(), batchRequest] });
+      return;
+    }
+
     this.update({ queue: [...this.getQueue(), request] });
   }
 
@@ -71,11 +85,19 @@ export default class GIAPPersistence {
     }
   }
 
-  dequeue = () => (this.props.queue.length
+  popFront = () => (this.props.queue.length
     ? this.props.queue.shift()
     : null);
 
-  peek = () => (this.props.queue.length
+  popBack = () => (this.props.queue.length
+    ? this.props.queue.pop()
+    : null);
+
+  peekFront = () => (this.props.queue.length
     ? this.props.queue[0]
+    : null);
+
+  peekBack = () => (this.props.queue.length
+    ? this.props.queue[this.props.queue.length - 1]
     : null);
 }

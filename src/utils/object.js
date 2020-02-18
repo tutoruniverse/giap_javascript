@@ -11,6 +11,3 @@ export const isEmpty = value => value === undefined
           || value === 0
           || (typeof value === 'object' && Object.keys(value).length === 0)
           || (typeof value === 'string' && value.trim().length === 0);
-
-
-export const createEventsBatch = events => ({ events: events.map(event => event) });
