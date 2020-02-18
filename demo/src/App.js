@@ -1,13 +1,18 @@
 import React, { Component } from 'react';
+import {
+  withRouter,
+  Switch,
+  Route,
+} from 'react-router-dom';
 import Form from './Form';
 import GIAP from '../../src/index';
 import { EventName } from './constants';
 
-export default class App extends Component {
-  state = { form: '', isSignedIn: false };
+class App extends Component {
+  state = { form: '' };
 
   componentDidMount() {
-    GIAP.initialize('tokenlsakjdflksjdfl', 'http://localhost:3000/');
+    GIAP.initialize('tokenlsakjdflksjdfl', 'http://localhost:3000/', true);
   }
 
   onVisit = ({ economyGroup }) => {
@@ -17,17 +22,23 @@ export default class App extends Component {
   onSignUp = ({ email }) => {
     GIAP.alias(email);
     GIAP.setProfileProperties({ email });
-    this.setState({ form: '', isSignedIn: true });
+    this.setState({ form: '' });
+    const { history } = this.props;
+    history.push('/ask');
   };
 
   onSignIp = ({ email }) => {
     GIAP.identify(email);
-    this.setState({ form: '', isSignedIn: true });
+    this.setState({ form: '' });
+    const { history } = this.props;
+    history.push('/ask');
   };
 
   onSignOut = () => {
     GIAP.reset();
-    this.setState({ form: '', isSignedIn: false });
+    this.setState({ form: '' });
+    const { history } = this.props;
+    history.push('/');
   }
 
   onAsk = ({ problemText }) => {
@@ -77,66 +88,77 @@ export default class App extends Component {
   }
 
   render() {
-    const { form, isSignedIn } = this.state;
+    const { form } = this.state;
     return (
       <div id="giap-app-container">
         <div id="button-container">
-          {!isSignedIn ? (
-            <React.Fragment>
-              <button
-                className={form === 'visit' ? 'button-active' : ''}
-                onClick={() => {
-                  this.setState({ form: 'visit' });
-                }}
-              >
-              Visit
-              </button>
-              <button
-                className={form === 'signup' ? 'button-active' : ''}
-                onClick={() => {
-                  this.setState({ form: 'signup' });
-                }}
-              >
-              Sign Up
-              </button>
-              <button
-                className={form === 'signIn' ? 'button-active' : ''}
-                onClick={() => {
-                  this.setState({ form: 'signIn' });
-                }}
-              >
-              Sign In
-              </button>
-            </React.Fragment>
-          )
-            : (
-              <React.Fragment>
-                <button
-                  onClick={this.onSignOut}
-                >
+          <Switch>
+            <Route
+              path="/ask"
+              render={() => (
+                <React.Fragment>
+                  <button
+                    onClick={this.onSignOut}
+                  >
                 Sign Out
-                </button>
-                <button
-                  className={form === 'ask' ? 'button-active' : ''}
-                  onClick={() => {
-                    this.setState({ form: 'ask' });
-                  }}
-                >
+                  </button>
+                  <button
+                    className={form === 'ask' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'ask' });
+                    }}
+                  >
                 Ask
-                </button>
-                <button
-                  className={form === 'setFullName' ? 'button-active' : ''}
-                  onClick={() => {
-                    this.setState({ form: 'setFullName' });
-                  }}
-                >
+                  </button>
+                  <button
+                    className={form === 'setFullName' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'setFullName' });
+                    }}
+                  >
                 Set Full Name
-                </button>
-              </React.Fragment>
-            )}
+                  </button>
+                </React.Fragment>
+              )}
+            />
+            <Route
+              path="/"
+              render={() => (
+                <React.Fragment>
+                  <button
+                    className={form === 'visit' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'visit' });
+                    }}
+                  >
+              Visit
+                  </button>
+                  <button
+                    className={form === 'signup' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'signup' });
+                    }}
+                  >
+              Sign Up
+                  </button>
+                  <button
+                    className={form === 'signIn' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'signIn' });
+                    }}
+                  >
+              Sign In
+                  </button>
+                </React.Fragment>
+              )}
+            />
+
+          </Switch>
         </div>
         {this.showForm()}
       </div>
     );
   }
 }
+
+export default withRouter(App);

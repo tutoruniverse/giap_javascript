@@ -151,21 +151,22 @@ const getSearchEngine = (referrer) => {
   return null;
 };
 
+export default () => {
+  const { screen, opera, navigator, document, location } = window;
+  const { userAgent, vendor } = navigator;
+  const { referrer } = document;
 
-const { screen, opera, navigator, document, location } = window;
-const { userAgent, vendor } = navigator;
-const { referrer } = document;
-
-export default () => ({
-  time: Date.now(),
-  screenHeight: screen.height,
-  screenWidth: screen.width,
-  browser: getBrowser(userAgent, vendor, opera),
-  browserVersion: getBrowserVersion(userAgent, vendor, opera),
-  currentUrl: location.href,
-  os: getOs(userAgent),
-  referrer,
-  referringDomain: getReferringDomain(referrer),
-  searchEngine: getSearchEngine(referrer),
-  device: getDevice(userAgent),
-});
+  return ({
+    time: Math.floor(Date.now() / 1000),
+    screenHeight: screen.height,
+    screenWidth: screen.width,
+    browser: getBrowser(userAgent, vendor, opera),
+    browserVersion: getBrowserVersion(userAgent, vendor, opera),
+    currentUrl: location.href,
+    os: getOs(userAgent),
+    referrer,
+    referringDomain: getReferringDomain(referrer),
+    searchEngine: getSearchEngine(referrer),
+    device: getDevice(userAgent),
+  });
+};

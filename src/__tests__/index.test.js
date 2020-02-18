@@ -4,11 +4,28 @@ import { QUEUE_INTERVAL } from '../constants/lib';
 describe('index', () => {
   const token = 'secret_token';
   const apiUrl = 'https://www.random-server-url.com/';
-  GIAP.initialize(token, apiUrl);
-  jest.setTimeout(QUEUE_INTERVAL * 5);
-  fetch.mockResponse(JSON.stringify({}));
+
+  beforeEach(() => {
+    fetch.resetMocks();
+    jest.setTimeout(QUEUE_INTERVAL * 5);
+    fetch.mockResponse(JSON.stringify({}));
+  });
+
+  const setup = () => {
+    localStorage.clear();
+    GIAP.initialize(token, apiUrl);
+  };
+
+  it('should prevent calling any methods before initializing', () => {
+    try {
+      GIAP.track();
+    } catch (e) {
+      expect(e.message).toBe('Analytics library not initialized');
+    }
+  });
 
   it('should emit events on batches', async () => {
+    setup();
     GIAP.track();
     GIAP.track();
     GIAP.track();
