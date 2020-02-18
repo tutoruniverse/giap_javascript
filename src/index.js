@@ -99,7 +99,7 @@ const flush = async () => {
 
 /* EMIT EVENT */
 const track = (name, properties) => {
-  if (!isInitialized) throw Error('Analytics library not initialzied');
+  if (!isInitialized) throw Error('Analytics library not initialized');
   // update properties with default props
   sendRequest(RequestType.TRACK,
     { ...prepareDefaultProps(name, persistence),
@@ -147,7 +147,7 @@ const initialize = (libToken, serverUrl) => {
 
 /* GET IDENTITY */
 const identify = (userId) => {
-  if (!isInitialized) throw Error('Analytics library not initialzied');
+  if (!isInitialized) throw Error('Analytics library not initialized');
   const distinctId = persistence.getDistinctId();
   sendRequest(
     RequestType.IDENTIFY,
@@ -161,7 +161,7 @@ const identify = (userId) => {
 
 /* CREATE ALIAS */
 const alias = (userId) => {
-  if (!isInitialized) throw Error('Analytics library not initialzied');
+  if (!isInitialized) throw Error('Analytics library not initialized');
   const distinctId = persistence.getDistinctId();
   sendRequest(
     RequestType.ALIAS,
@@ -173,7 +173,7 @@ const alias = (userId) => {
 
 /* RESET PROFILE */
 const reset = () => {
-  if (!isInitialized) throw Error('Analytics library not initialzied');
+  if (!isInitialized) throw Error('Analytics library not initialized');
   persistence.update({
     distinctId: uuid(),
   });
@@ -181,7 +181,7 @@ const reset = () => {
 
 /* MODIFY PROFILE */
 const setProfileProperties = (props) => {
-  if (!isInitialized) throw Error('Analytics library not initialzied');
+  if (!isInitialized) throw Error('Analytics library not initialized');
   const id = persistence.getDistinctId();
   sendRequest(
     RequestType.SET_PROFILE_PROPERTIES,
