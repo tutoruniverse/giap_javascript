@@ -35,9 +35,46 @@ describe('GIAPPersistence', () => {
     expect(instance.props.initialReferringDomain).toBe('github.com');
   });
 
-  it('should return persisted profile props correctly', () => {
+  it('should alway load from localStorage successfully', () => {
+    localStorage.setItem(PERSISTENCE_NAME, '{ "distinctId": 123 }');
     setup();
-    const props = instance.getPersistedProps();
-    //expect(props.queue).toBeFalsy();
+    expect(instance.getDistinctId()).toEqual(123);
+
+    localStorage.setItem(PERSISTENCE_NAME, '{ invalid JSON string');
+    setup();
+    expect(instance.getPersistedProps()).toEqual({});
+  });
+
+  it('should have proper queue functionalities', () => {
+    setup();
+    expect(instance.popFront()).toBeNull();
+    expect(instance.popBack()).toBeNull();
+    expect(instance.peekFront()).toBeNull();
+
+    instance.updateQueue({ type: 'IDENTIFY' });
+    instance.updateQueue({ type: 'TRACK' });
+    instance.updateQueue({ type: 'SAMPLE' });
+
+    expect(instance.popFront().type).toBe('IDENTIFY');
+    expect(instance.popBack().type).toBe('SAMPLE');
+    expect(instance.peekFront().type).toBe('TRACK');
+    expect(instance.getQueue().length).toBe(1);
+  });
+
+  it('should create TRACK requests batches in queue', () => {
+    setup();
+    instance.updateQueue({ type: 'TEST', data: {} });
+    expect(instance.getQueue()).toHaveLength(1);
+    instance.updateQueue({ type: 'TRACK', data: {} });
+    expect(instance.getQueue()).toHaveLength(2);
+    instance.updateQueue({ type: 'TRACK', data: {} });
+    expect(instance.getQueue()).toHaveLength(2);
+
+    setup();
+    instance.popFront();
+    instance.updateQueue({ type: 'TRACK', data: {} });
+    expect(instance.getQueue()).toHaveLength(1);
+    instance.updateQueue({ type: 'TRACK', data: {} }, true);
+    expect(instance.getQueue()).toHaveLength(2);
   });
 });

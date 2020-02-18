@@ -14,7 +14,7 @@
  *  device
 */
 
-const getBrowser = (userAgent, vendor, opera) => {
+export const getBrowser = (userAgent, vendor, opera) => {
   if (opera || userAgent.includes(' OPR/')) {
     if (userAgent.includes('Mini')) {
       return 'Opera Mini';
@@ -60,7 +60,7 @@ const getBrowser = (userAgent, vendor, opera) => {
   return '';
 };
 
-const getBrowserVersion = (userAgent, vendor, opera) => {
+export const getBrowserVersion = (userAgent, vendor, opera) => {
   const browser = getBrowser(userAgent, vendor, opera);
   const versionRegexs = {
     'Internet Explorer Mobile': /rv:(\d+(\.\d+)?)/,
@@ -91,7 +91,7 @@ const getBrowserVersion = (userAgent, vendor, opera) => {
   return parseFloat(matches[matches.length - 2]);
 };
 
-const getOs = (userAgent) => {
+export const getOs = (userAgent) => {
   if (/Windows/i.test(userAgent)) {
     if (/Phone/.test(userAgent) || /WPDesktop/.test(userAgent)) {
       return 'Windows Phone';
@@ -121,7 +121,7 @@ export const getReferringDomain = (referrer) => {
   return '';
 };
 
-const getDevice = (userAgent) => {
+export const getDevice = (userAgent) => {
   if (/Windows Phone/i.test(userAgent) || /WPDesktop/.test(userAgent)) {
     return 'Windows Phone';
   } if (/iPad/.test(userAgent)) {
@@ -138,7 +138,7 @@ const getDevice = (userAgent) => {
   return '';
 };
 
-const getSearchEngine = (referrer) => {
+export const getSearchEngine = (referrer) => {
   if (referrer.search('https?://(.*)google.([^/?]*)') === 0) {
     return 'google';
   } if (referrer.search('https?://(.*)bing.com') === 0) {

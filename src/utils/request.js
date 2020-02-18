@@ -25,8 +25,6 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     // pass
   }
 
-  /* await new Promise(resolve => setTimeout(resolve, 2000)); */
-
   if (!res || !res.status || res.status > 499) {
     return { retry: true };
   }

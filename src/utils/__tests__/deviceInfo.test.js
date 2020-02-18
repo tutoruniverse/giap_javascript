@@ -1,8 +1,7 @@
 /* import PaymentSession from '../PaymentSession'; */
-import getDeviceInfo from '../deviceInfo';
+import getDeviceInfo, * as DeviceInfo from '../deviceInfo';
 
 describe('GIAPDeviceInfo', () => {
-  let window;
   let props;
 
   const mapUserAgent = [
@@ -78,22 +77,7 @@ describe('GIAPDeviceInfo', () => {
       } },
   ];
 
-  beforeEach(() => {
-    window = {
-      screen: { height: 1680, width: 1050 },
-      navigator: {
-        userAgent: '"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36"',
-        vendor: 'Google Inc.' },
-      document: { referrer: 'https://www.google.com/' },
-      location: { href: 'https://www.got-it.ai/solutions/excel-chat/home' },
-    };
-  });
-
-  const setup = () => {
-    props = getDeviceInfo(window);
-  };
-
-  /* it('should collect search engine correctly', () => {
+  it('should collect search engine correctly', () => {
     const map = [
       ['https://www.google.com/', 'google'],
       ['https://vn.yahoo.com', 'yahoo'],
@@ -102,47 +86,29 @@ describe('GIAPDeviceInfo', () => {
       ['https://stackoverflow.com', null],
     ];
     map.forEach(([k, v]) => {
-      window.document.referrer = k;
-      setup();
-      expect(props.searchEngine).toBe(v);
+      expect(DeviceInfo.getSearchEngine(k)).toBe(v);
     });
   });
 
   it('should collect device correctly', () => {
     mapUserAgent.forEach(({ userAgent, props: properties }) => {
-      window.navigator.userAgent = userAgent;
-      setup();
-      expect(props.device).toBe(properties.device);
+      expect(DeviceInfo.getDevice(userAgent)).toBe(properties.device);
     });
-  });
-
-  it('should collect referring domain correctly', () => {
-    setup();
-    expect(props.referringDomain).toBe('www.google.com');
-    window.document.referrer = '';
-    setup();
-    expect(props.referringDomain).toBe('');
   });
 
   it('should collect OS correctly', () => {
     mapUserAgent.forEach(({ userAgent, props: properties }) => {
-      window.navigator.userAgent = userAgent;
-      setup();
-      expect(props.os).toBe(properties.os);
+      expect(DeviceInfo.getOs(userAgent)).toBe(properties.os);
     });
   });
 
   it('should collect browser correctly', () => {
     mapUserAgent.forEach(({ userAgent, props: properties }) => {
-      window.navigator.userAgent = userAgent;
-      setup();
-      expect(props.browser).toBe(properties.browser);
+      expect(DeviceInfo.getBrowser(userAgent)).toBe(properties.browser);
     });
-  }); */
+  });
 
   it('should have default window object', () => {
-    window = undefined;
-    setup();
-    expect(props.browser).toBe('Safari');
+    expect(getDeviceInfo().browser).toBe('Safari');
   });
 });

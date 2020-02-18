@@ -50,6 +50,7 @@
     "react/destructuring-assignment": "warn",
     "no-await-in-loop": "warn",
     "react/button-has-type": "0",
+    "no-underscore-dangle": "warn",
     "react/sort-comp": [
       1,
       {

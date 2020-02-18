@@ -89,7 +89,7 @@ export default class GIAPPersistence {
         ...JSON.parse(localStorage.getItem(PERSISTENCE_NAME)),
       });
     } catch (e) {
-      console.error(e);
+      // pass
     }
   }
 

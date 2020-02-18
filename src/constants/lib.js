@@ -1,4 +1,4 @@
-export const QUEUE_INTERVAL = '5000'; // 500ms
+export const QUEUE_INTERVAL = '500'; // 500ms
 
 export const LIB = 'GIAP-javascript';
 

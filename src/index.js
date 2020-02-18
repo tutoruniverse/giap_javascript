@@ -143,7 +143,6 @@ const initialize = (libToken, serverUrl, enableLog = false) => {
   isInitialized = true;
 
   // setIntervals:
-  // every INTERVAL: _flush()
   setInterval(() => {
     if (!isFlushing) flush();
   }, QUEUE_INTERVAL);
@@ -203,9 +202,10 @@ export default {
 };
 
 /* for testing only */
-global.getState = () => ({ token,
+/* global.getState = () => ({ token,
   apiUrl,
   persistence,
   isFlushing,
   queue: persistence.getQueue(),
 });
+ */
