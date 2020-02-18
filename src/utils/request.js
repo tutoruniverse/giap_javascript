@@ -19,7 +19,7 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     res = await fetch(url, {
       method,
       headers,
-      body: (body ? JSON.stringify(CaseConverter.snakeCaseToCamelCaseWithPrefix(body)) : undefined),
+      body: (body ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body)) : undefined),
     });
   } catch (e) {
     // pass
@@ -33,7 +33,7 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
 
   return (res.json())
     .then(res => ({ retry: false,
-      data: CaseConverter.snakeCaseToCamelCase(res) }));
+      data: CaseConverter.snakeCaseToCamelCaseWithPrefix(res) }));
 };
 
 export default class RequestHelper {

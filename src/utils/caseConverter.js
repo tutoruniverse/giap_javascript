@@ -1,6 +1,6 @@
 const toCamelCase = snakeCase => snakeCase.replace(/_[a-z]/g, characters => characters[1].toUpperCase());
 
-const toCamelCaseWithPrefix = snakeCase => snakeCase.replace(/.(_[a-z])/g, characters => characters[1].toUpperCase());
+const toCamelCaseWithPrefix = snakeCase => snakeCase.replace(/.(_[a-z])/g, characters => characters[0] + characters[2].toUpperCase());
 
 const toSnakeCase = camelCase => camelCase.replace(/[A-Z]/g, character => `_${character.toLowerCase()}`);
 
