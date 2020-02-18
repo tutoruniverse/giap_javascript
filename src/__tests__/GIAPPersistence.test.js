@@ -1,4 +1,4 @@
-import GIAPPersistence from 'GIAPPersistence';
+import GIAPPersistence from 'persistence';
 
 describe('GIAPPersistence', () => {
   let instance;

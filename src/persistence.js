@@ -7,7 +7,7 @@
  *    initial_referring_domain
  *    queue
  */
-import DeviceInfo from './utils/deviceInfo';
+import { getReferringDomain } from './utils/deviceInfo';
 
 export default class GIAPPersistence {
   props = {
@@ -38,7 +38,7 @@ export default class GIAPPersistence {
     if (this.props.initialReferrer) return;
     this.update({
       initialReferrer: referrer || '$direct',
-      initialReferringDomain: DeviceInfo.getReferringDomain(referrer) || '$direct',
+      initialReferringDomain: getReferringDomain(referrer) || '$direct',
     });
     // save the changes to localStorage
     this.persist();

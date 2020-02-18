@@ -1,5 +1,5 @@
 import Config from '../configuration';
-import getDeviceInfo from '../GIAPDeviceInfo';
+import getDeviceInfo from './deviceInfo';
 
 export const mapKeys = (obj, modifier) => {
   const res = {};

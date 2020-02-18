@@ -2,7 +2,7 @@ import { uuid } from 'uuidv4';
 import { prepareDefaultProps, createEventsBatch } from './utils';
 import RequestHelper from './utils/request';
 import Config from './configuration';
-import GIAPPersistence from './GIAPPersistence';
+import GIAPPersistence from './persistence';
 import { QUEUE_INTERVAL } from './constants/app';
 import RequestType from './constants/requestType';
 
