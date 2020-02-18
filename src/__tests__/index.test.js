@@ -5,9 +5,10 @@ describe('index', () => {
   const token = 'secret_token';
   const apiUrl = 'https://www.random-server-url.com/';
   GIAP.initialize(token, apiUrl);
+  jest.setTimeout(QUEUE_INTERVAL * 5);
+  fetch.mockResponse(JSON.stringify({}));
 
   it('should emit events on batches', async () => {
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
     GIAP.track();
     GIAP.track();
     GIAP.track();
@@ -19,11 +20,7 @@ describe('index', () => {
 
     await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
     expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch.mock.calls[1][1].method).toBe('POST');
-
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    expect(fetch).toHaveBeenCalledTimes(3);
-    expect(fetch.mock.calls[2][1].method).toBe('PUT');
+    expect(fetch.mock.calls[1][1].method).toBe('PUT');
   });
 
   /* it('should send one request each interval', async () => {

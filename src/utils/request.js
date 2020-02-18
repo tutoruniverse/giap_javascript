@@ -8,7 +8,6 @@ const defaultHeaders = {
 };
 
 const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl) => {
-  await new Promise(resolve => setTimeout(resolve, 2000));
   const url = apiUrl + endpoint;
   const headers = {
     ...defaultHeaders,
@@ -26,6 +25,8 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     console.log('catched');
     console.log(e);
   }
+
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   if (!res || !res.status || res.status > 499) {
     return { retry: true };

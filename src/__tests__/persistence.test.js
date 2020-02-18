@@ -1,20 +1,20 @@
 import GIAPPersistence from 'persistence';
+import { PERSISTENCE_NAME } from '../constants/lib';
 
 describe('GIAPPersistence', () => {
   let instance;
-  const name = 'GIAP-javascript';
 
   beforeEach(() => {
     localStorage.clear();
   });
 
   const setup = () => {
-    instance = new GIAPPersistence(name);
+    instance = new GIAPPersistence();
   };
 
-  it('should persist data with library name', () => {
+  it('should persist data with the correct name', () => {
     setup();
-    expect(localStorage.getItem(name)).toBeTruthy();
+    expect(localStorage.getItem(PERSISTENCE_NAME)).toBeTruthy();
   });
 
   it('should update initial referrer correctly', () => {

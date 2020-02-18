@@ -26,13 +26,13 @@ describe('utils/request', () => {
   it('should handle success and failure response accordingly', async () => {
     fetch.mockResponse(JSON.stringify(response));
     let res = await instance.get();
-    expect(res).toEqual(response);
+    expect(res).toEqual({ retry: false, data: response });
 
     fetch.mockRejectedValue(response);
     try {
       res = await instance.get();
     } catch (e) {
-      expect(e).toEqual(response);
+      expect(e).toEqual({ retry: false, data: response });
     }
   });
 });
