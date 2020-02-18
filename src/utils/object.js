@@ -1,6 +1,3 @@
-import Config from '../configuration';
-import getDeviceInfo from './deviceInfo';
-
 export const mapKeys = (obj, modifier) => {
   const res = {};
   Object.entries(obj).forEach(([key, value]) => {
@@ -15,12 +12,5 @@ export const isEmpty = value => value === undefined
           || (typeof value === 'object' && Object.keys(value).length === 0)
           || (typeof value === 'string' && value.trim().length === 0);
 
-export const prepareDefaultProps = (name, persistence) => mapKeys({
-  name,
-  lib: Config.LIB,
-  libVersion: Config.LIB_VERSION,
-  ...persistence.getPersistedProps(),
-  ...getDeviceInfo(),
-}, key => `_${key}`);
 
 export const createEventsBatch = events => ({ events: events.map(event => event) });

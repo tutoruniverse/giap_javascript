@@ -1,9 +1,9 @@
 import { uuid } from 'uuidv4';
-import { prepareDefaultProps, createEventsBatch } from './utils';
+import { createEventsBatch } from './utils/object';
+import prepareDefaultProps from './utils/defaultProps';
 import RequestHelper from './utils/request';
-import Config from './configuration';
 import GIAPPersistence from './persistence';
-import { QUEUE_INTERVAL } from './constants/app';
+import { QUEUE_INTERVAL } from './constants/lib';
 import RequestType from './constants/requestType';
 
 let token;
@@ -110,7 +110,7 @@ const initialize = (libToken, serverUrl) => {
   isFlushing = false;
 
   // initialize persistence by new GIAPPersistence object
-  persistence = new GIAPPersistence(Config.PERSISTENCE_NAME);
+  persistence = new GIAPPersistence();
   libFetch = new RequestHelper(token, apiUrl);
 
   // setup profile:

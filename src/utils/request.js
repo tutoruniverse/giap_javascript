@@ -1,6 +1,6 @@
 import QueryString from 'querystring';
 import CaseConverter from './caseConverter';
-import { isEmpty } from '.';
+import { isEmpty } from './object';
 
 const defaultHeaders = {
   Accept: 'application/json',

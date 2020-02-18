@@ -1,5 +1,5 @@
 import GIAP from '../index';
-import { QUEUE_INTERVAL } from '../constants/app';
+import { QUEUE_INTERVAL } from '../constants/lib';
 
 describe('index', () => {
   const token = 'secret_token';

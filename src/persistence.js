@@ -8,16 +8,14 @@
  *    queue
  */
 import { getReferringDomain } from './utils/deviceInfo';
+import { PERSISTENCE_NAME } from './constants/lib';
 
 export default class GIAPPersistence {
   props = {
     queue: [],
   }
 
-  constructor(name) {
-    // this.name: store storage name from config
-    this.name = name;
-
+  constructor() {
     // load persisted data from localStorage
     this.load();
   }
@@ -60,13 +58,13 @@ export default class GIAPPersistence {
   }
 
   persist = () => {
-    localStorage.setItem(this.name, JSON.stringify(this.props));
+    localStorage.setItem(PERSISTENCE_NAME, JSON.stringify(this.props));
   }
 
   load = () => {
     try {
       this.update({
-        ...JSON.parse(localStorage.getItem(this.name)),
+        ...JSON.parse(localStorage.getItem(PERSISTENCE_NAME)),
       });
     } catch (e) {
       console.error(e);
