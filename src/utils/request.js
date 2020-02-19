@@ -4,7 +4,6 @@ import { isEmpty } from './object';
 
 const defaultHeaders = {
   Accept: 'application/json',
-  'Content-Type': 'application/json',
 };
 
 const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl) => {
@@ -15,6 +14,11 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     Authorization: `Bearer ${token}`,
   };
   let res;
+
+  if (body) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   try {
     res = await fetch(url, {
       method,
