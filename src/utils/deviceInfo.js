@@ -157,7 +157,7 @@ export default () => {
   const { referrer } = document;
 
   return ({
-    time: Math.floor(Date.now() / 1000),
+    time: Date.now(),
     screenHeight: screen.height,
     screenWidth: screen.width,
     browser: getBrowser(userAgent, vendor, opera),
