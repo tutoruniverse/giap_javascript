@@ -44,7 +44,7 @@ const sendRequest = (type, data) => {
   logger.groupEnd('queue');
 };
 
-/* */
+/* FLUSH QUEUE */
 const flush = async () => {
   const request = peek();
   if (!request) { return; }
@@ -103,7 +103,6 @@ const flush = async () => {
 /* EMIT EVENT */
 const track = (name, properties) => {
   if (!isInitialized) throw Error('Analytics library not initialized');
-  // update properties with default props
   sendRequest(RequestType.TRACK,
     { ...prepareDefaultProps(name, persistence),
       ...properties },
@@ -112,18 +111,15 @@ const track = (name, properties) => {
 
 /* INITIALIZE */
 const initialize = (libToken, serverUrl, enableLog = false) => {
-  // store token to config
   token = libToken;
   apiUrl = serverUrl;
 
   isFlushing = false;
   logger = createLogger(enableLog);
 
-  // initialize persistence by new GIAPPersistence object
   persistence = new GIAPPersistence();
   libFetch = new RequestHelper(token, apiUrl);
 
-  // setup profile:
   if (!persistence.getDistinctId()) {
     persistence.update({
       distinctId: uuid(),
@@ -136,13 +132,10 @@ const initialize = (libToken, serverUrl, enableLog = false) => {
     });
   }
 
-  // initial referrer
   persistence.updateReferrer(window.document.referrer);
 
-  // update initialized flag
   isInitialized = true;
 
-  // setIntervals:
   setInterval(() => {
     if (!isFlushing) flush();
   }, QUEUE_INTERVAL);
@@ -157,7 +150,6 @@ const identify = (userId) => {
     { userId, distinctId }
   );
 
-  // update distinctId
   persistence.update({ distinctId: userId });
 };
 
@@ -200,12 +192,3 @@ export default {
   identify,
   reset,
 };
-
-/* for testing only */
-/* global.getState = () => ({ token,
-  apiUrl,
-  persistence,
-  isFlushing,
-  queue: persistence.getQueue(),
-});
- */

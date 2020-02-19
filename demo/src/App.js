@@ -5,15 +5,11 @@ import {
   Route,
 } from 'react-router-dom';
 import Form from './Form';
-import GIAP from '../../src/index';
-import { EventName, GIAP_API_URL, GIAP_TOKEN } from './constants/app';
+import GIAP from '../../src';
+import { EventName } from './constants/app';
 
 class App extends Component {
   state = { form: '' };
-
-  componentDidMount() {
-    GIAP.initialize(GIAP_TOKEN, GIAP_API_URL, true);
-  }
 
   onVisit = ({ economyGroup }) => {
     GIAP.track(EventName.VISIT, { economyGroup: parseInt(economyGroup) });
