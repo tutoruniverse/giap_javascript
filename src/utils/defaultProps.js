@@ -8,4 +8,4 @@ export default (name, persistence) => mapKeys({
   libVersion: LIB_VERSION,
   ...persistence.getPersistedProps(),
   ...getDeviceInfo(),
-}, key => `_${key}`);
+}, key => `$${key}`);

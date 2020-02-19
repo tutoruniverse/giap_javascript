@@ -42,12 +42,12 @@ describe('index', () => {
     setup();
     GIAP.track();
     await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    const oldDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0]._distinct_id;
+    const oldDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
 
     GIAP.reset();
     GIAP.track();
     await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    const newDistinctId = JSON.parse(fetch.mock.calls[1][1].body).events[0]._distinct_id;
+    const newDistinctId = JSON.parse(fetch.mock.calls[1][1].body).events[0].$distinct_id;
 
     expect(oldDistinctId).not.toEqual(newDistinctId);
   });
@@ -60,7 +60,7 @@ describe('index', () => {
     await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
     await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
 
-    const currentDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0]._distinct_id;
+    const currentDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
     expect(fetch.mock.calls[1][0].includes(currentDistinctId)).toBeTruthy();
   });
 
