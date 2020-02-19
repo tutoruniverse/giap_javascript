@@ -6,13 +6,13 @@ import {
 } from 'react-router-dom';
 import Form from './Form';
 import GIAP from '../../src/index';
-import { EventName } from './constants';
+import { EventName, GIAP_API_URL, GIAP_TOKEN } from './constants/app';
 
 class App extends Component {
   state = { form: '' };
 
   componentDidMount() {
-    GIAP.initialize('tokenlsakjdflksjdfl', 'http://localhost:3000/', true);
+    GIAP.initialize(GIAP_TOKEN, GIAP_API_URL, true);
   }
 
   onVisit = ({ economyGroup }) => {
