@@ -110,5 +110,6 @@ describe('GIAPDeviceInfo', () => {
 
   it('should have default window object', () => {
     expect(getDeviceInfo().browser).toBe('Safari');
+    expect(getDeviceInfo().referrer).toBeNull();
   });
 });

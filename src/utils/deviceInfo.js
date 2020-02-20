@@ -164,7 +164,7 @@ export default () => {
     browserVersion: getBrowserVersion(userAgent, vendor, opera),
     currentUrl: location.href,
     os: getOs(userAgent),
-    referrer,
+    referrer: referrer || null,
     referringDomain: getReferringDomain(referrer),
     searchEngine: getSearchEngine(referrer),
     device: getDevice(userAgent),
