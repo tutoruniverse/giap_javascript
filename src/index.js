@@ -110,8 +110,8 @@ const track = (name, properties) => {
 };
 
 /* INITIALIZE */
-const initialize = (libToken, serverUrl, enableLog = false) => {
-  token = libToken;
+const initialize = (projectToken, serverUrl, enableLog = false) => {
+  token = projectToken;
   apiUrl = serverUrl;
 
   isFlushing = false;
