@@ -1,6 +1,6 @@
 export const EventName = {
   ASK: 'Ask',
-  SIGN_UP: 'Sign-up',
+  SIGN_UP: 'Sign Up',
   VISIT: 'Visit',
 };
 
