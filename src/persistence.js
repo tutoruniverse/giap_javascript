@@ -34,10 +34,10 @@ export default class GIAPPersistence {
   }
 
   updateReferrer = (referrer) => {
-    if (this.props.initialReferrer) return;
+    if (this.props.initialReferrer !== undefined) return;
     this.update({
-      initialReferrer: referrer || '$direct',
-      initialReferringDomain: getReferringDomain(referrer) || '$direct',
+      initialReferrer: referrer || null,
+      initialReferringDomain: getReferringDomain(referrer) || null,
     });
     // save the changes to localStorage
     this.persist();

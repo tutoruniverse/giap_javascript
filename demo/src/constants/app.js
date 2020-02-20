@@ -4,6 +4,6 @@ export const EventName = {
   VISIT: 'Visit',
 };
 
-export const GIAP_API_URL = 'http://0.0.0.0:8080/';
+export const GIAP_API_URL = 'http://13.250.58.88:80/';
 
 export const GIAP_TOKEN = 'casey';
