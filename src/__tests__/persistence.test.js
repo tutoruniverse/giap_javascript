@@ -20,8 +20,8 @@ describe('GIAPPersistence', () => {
   it('should update initial referrer correctly', () => {
     setup();
     instance.updateReferrer('');
-    expect(instance.props.initialReferrer).toBe('$direct');
-    expect(instance.props.initialReferringDomain).toBe('$direct');
+    expect(instance.props.initialReferrer).toBeNull();
+    expect(instance.props.initialReferringDomain).toBeNull();
   });
 
   it('should not update initial referrer more than once', () => {

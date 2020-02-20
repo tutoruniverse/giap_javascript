@@ -57,7 +57,7 @@ export const getBrowser = (userAgent, vendor, opera) => {
   } if (userAgent.includes('Gecko')) {
     return 'Mozilla';
   }
-  return '';
+  return null;
 };
 
 export const getBrowserVersion = (userAgent, vendor, opera) => {
@@ -110,7 +110,7 @@ export const getOs = (userAgent) => {
   } if (/CrOS/.test(userAgent)) {
     return 'Chrome OS';
   }
-  return '';
+  return null;
 };
 
 export const getReferringDomain = (referrer) => {
@@ -118,7 +118,7 @@ export const getReferringDomain = (referrer) => {
   if (split.length >= 3) {
     return split[2];
   }
-  return '';
+  return null;
 };
 
 export const getDevice = (userAgent) => {
@@ -135,7 +135,7 @@ export const getDevice = (userAgent) => {
   } if (/Android/.test(userAgent)) {
     return 'Android';
   }
-  return '';
+  return null;
 };
 
 export const getSearchEngine = (referrer) => {

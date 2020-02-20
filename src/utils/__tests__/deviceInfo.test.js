@@ -30,29 +30,29 @@ describe('GIAPDeviceInfo', () => {
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246',
       props: {
         os: 'Windows',
-        device: '',
+        device: null,
         browser: 'Microsoft Edge',
       } },
     {
       userAgent: 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1',
       props: {
         os: 'Linux',
-        device: '',
+        device: null,
         browser: 'Firefox',
       } },
     {
       userAgent: 'Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36',
       props: {
         os: 'Chrome OS',
-        device: '',
+        device: null,
         browser: 'Chrome',
       } },
     {
       userAgent: 'Roku4640X/DVP-7.70 (297.70E04154A)',
       props: {
-        os: '',
-        device: '',
-        browser: '',
+        os: null,
+        device: null,
+        browser: null,
       } },
     {
       userAgent: 'Mozilla/5.0 (BB10; Touch) AppleWebKit/537.35+ (KHTML, like Gecko) Version/10.3.2.2876 Mobile Safari/537.35+',
