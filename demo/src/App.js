@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom';
 import Form from './Form';
 import GIAP from '../../src';
-import { EventName } from './constants/app';
+import { EventName, GIAP_API_URL } from './constants/app';
 
 class App extends Component {
   state = { form: '' };
@@ -16,6 +16,7 @@ class App extends Component {
   };
 
   onSignUp = ({ email }) => {
+    GIAP.track(EventName.SIGN_UP, { email });
     GIAP.alias(email);
     GIAP.setProfileProperties({ email });
     this.setState({ form: '' });

@@ -1,8 +1,9 @@
 export const EventName = {
-  ASK: 'ASK',
-  VISIT: 'VISIT',
+  ASK: 'Ask',
+  SIGN_UP: 'Sign-up',
+  VISIT: 'Visit',
 };
 
 export const GIAP_API_URL = 'http://0.0.0.0:8080/';
 
-export const GIAP_TOKEN = 'excelchat';
+export const GIAP_TOKEN = 'casey';
