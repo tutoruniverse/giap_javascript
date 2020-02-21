@@ -15,6 +15,13 @@ describe('index', () => {
     GIAP.initialize(token, apiUrl);
   };
 
+  const waitForFlushOnce = async () => {
+    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+  };
+
   it('should prevent calling any methods before initializing', () => {
     try {
       GIAP.track();
@@ -41,15 +48,22 @@ describe('index', () => {
   it('should create new distinctId on reset call', async () => {
     setup();
     GIAP.track();
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    const oldDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
+    await waitForFlushOnce();
 
     GIAP.reset();
     GIAP.track();
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
+    await waitForFlushOnce();
+
+    setup();
+    GIAP.track();
+    await waitForFlushOnce();
+
+    const oldDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
     const newDistinctId = JSON.parse(fetch.mock.calls[1][1].body).events[0].$distinct_id;
+    const newerDistinctId = JSON.parse(fetch.mock.calls[2][1].body).events[0].$distinct_id;
 
     expect(oldDistinctId).not.toEqual(newDistinctId);
+    expect(newerDistinctId).not.toEqual(newDistinctId);
   });
 
   it('should call identify with currentDistinctId as queryString', async () => {
@@ -57,8 +71,8 @@ describe('index', () => {
     GIAP.track();
     GIAP.identify();
 
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
+    await waitForFlushOnce();
+    await waitForFlushOnce();
 
     const currentDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
     expect(fetch.mock.calls[1][0].includes(currentDistinctId)).toBeTruthy();
@@ -71,10 +85,10 @@ describe('index', () => {
     GIAP.track();
     GIAP.track();
     GIAP.setProfileProperties();
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    expect(fetch.mock.calls[0][1].method).toBe('POST');
+    await waitForFlushOnce();
+    await waitForFlushOnce();
 
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
+    expect(fetch.mock.calls[0][1].method).toBe('POST');
     expect(fetch.mock.calls[1][1].method).toBe('PUT');
   });
 
@@ -85,23 +99,23 @@ describe('index', () => {
     GIAP.alias();
     GIAP.identify();
 
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
+    await waitForFlushOnce();
+    await waitForFlushOnce();
+    await waitForFlushOnce();
     expect(fetch.mock.calls[0][1].method).toBe('POST');
     expect(fetch.mock.calls[1][1].method).toBe('POST');
     expect(fetch.mock.calls[2][1].method).toBe('POST');
   });
 
-  /* it('should handle isFlushing flag correctly', async () => {
-    fetch.mockResponse(
-      () => new Promise(resolve => setTimeout(() => resolve({ body: '{}' }), 1500))
-    );
+  it('should have the ability for notify after requests fetched', async () => {
     setup();
-    GIAP.alias();
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
-    expect(fetch).toHaveBeenCalledTimes(1);
-  }); */
+    const testFunction = jest.fn();
+
+    GIAP.track('TEST');
+
+    GIAP.notification.didEmitEvents = () => { testFunction(); };
+    GIAP.track('TEST');
+    await waitForFlushOnce();
+    expect(testFunction).toHaveBeenCalledTimes(1);
+  });
 });

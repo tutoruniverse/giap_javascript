@@ -14,7 +14,7 @@ export default () => {
   };
 
   giap.notification.didUpdateProfile = ({ id, props }, responseData) => {
-    console.log(`GIAP didUpdateProfile: ${id}.bold with withProperties: `, props);
+    console.log(`GIAP didUpdateProfile: ${id} with withProperties: `, props);
     console.log('   Response: ', responseData);
   };
 
