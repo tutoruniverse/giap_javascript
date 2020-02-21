@@ -14,6 +14,12 @@ let isFlushing;
 let libFetch;
 let isInitialized = false;
 let logger;
+const notification = {
+  didResetWithDistinctId: null,
+  didEmitEvents: null,
+  didUpdateProfile: null,
+  didCreateAliasForUserId: null,
+  didIdentifyUserId: null };
 
 const enqueue = (request) => {
   /* isFlushing: boolean: help to decide whether or not to separate
@@ -55,35 +61,48 @@ const flush = async () => {
   /* SEND REQUEST */
 
   let res;
+  let callback;
+  const { didEmitEvents, didUpdateProfile, didCreateAliasForUserId, didIdentifyUserId } = notification;
+
   const { type, data } = request;
 
   switch (type) {
     case RequestType.TRACK: {
       res = await libFetch.post('events', { events: data });
+      if (didEmitEvents) callback = didEmitEvents;
       break;
     }
+
     case RequestType.ALIAS: {
       const { userId, distinctId } = data;
       res = await libFetch.post('alias', { userId, distinctId });
+      if (didCreateAliasForUserId) callback = didCreateAliasForUserId;
       break; }
 
     case RequestType.IDENTIFY: {
       const { userId, distinctId } = data;
       res = await libFetch.get(`alias/${userId}`,
         { currentDistinctId: distinctId });
+      if (didIdentifyUserId) callback = didIdentifyUserId;
       break;
     }
 
     case RequestType.SET_PROFILE_PROPERTIES: {
       const { id, props } = data;
       res = await libFetch.put(`profiles/${id}`, props);
+      if (didUpdateProfile) callback = didUpdateProfile;
       break;
     }
     default:
   }
+
   logger.log(res);
   if (!res.retry) {
     dequeue();
+  }
+
+  if (typeof callback === 'function') {
+    callback(data, res.data || 'None');
   }
 
   isFlushing = false;
@@ -169,6 +188,10 @@ const alias = (userId) => {
 /* RESET PROFILE */
 const reset = () => {
   if (!isInitialized) throw Error('Analytics library not initialized');
+  const { didResetWithDistinctId } = notification;
+  if (typeof didResetWithDistinctId === 'function') {
+    didResetWithDistinctId(persistence.getDistinctId());
+  }
   persistence.update({
     distinctId: uuid(),
   });
@@ -191,4 +214,5 @@ export default {
   alias,
   identify,
   reset,
+  notification,
 };

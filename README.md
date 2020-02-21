@@ -25,7 +25,7 @@ Parameters
 
 -   `projectToken`: **[String]()** - **required** - your project token
 -   `serverUrl`: **[String]()** - **required** - GIAP server url
--   `enableLog`: **[Boolean]()** - **optional** - set to `true` to enable console log
+-   `enableLog`: **[Boolean]()** - **optional** - set to `true` to enable development log
 
 ### Create alias
 Use this method right after user has just signed up
@@ -62,6 +62,38 @@ Use this method right after user has just logged out
 ```javascript
 giap.reset();
 ```
+
+### Notification
+
+GIAP Javascript SDK handles everything asynchronously. Your app can be notified about important tasks done by the SDK.
+
+Implement the following methods for your library:
+
+  ```javascript
+  giap.notification.didResetWithDistinctId = (distinctId) => {
+    console.log(`GIAP didResetWithDistinctId: ${distinctId}`);
+  };
+
+  giap.notification.didEmitEvents = (events, responseData) => {
+    console.log('GIAP didEmitEvent: ', events);
+    console.log('   Response: ', responseData);
+  };
+
+  giap.notification.didUpdateProfile = ({ id, props }, responseData) => {
+    console.log(`GIAP didUpdateProfile: ${id}.bold with withProperties: `, props);
+    console.log('   Response: ', responseData);
+  };
+
+  giap.notification.didCreateAliasForUserId = ({ userId, distinctId }, responseData) => {
+    console.log(`GIAP didCreateAliasForUserId: ${userId} withDistinctId ${distinctId}`);
+    console.log('   Response: ', responseData);
+  };
+
+  giap.notification.didIdentifyUserId = ({ userId, distinctId }, responseData) => {
+    console.log(`GIAP didIdentifyUserId: ${userId} withCurrentDistinctId ${distinctId}`);
+    console.log('   Response: ', responseData);
+  };
+  ```
 
 
 

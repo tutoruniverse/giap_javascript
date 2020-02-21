@@ -5,45 +5,45 @@ import {
   Route,
 } from 'react-router-dom';
 import Form from './Form';
-import GIAP from '../../src';
-import { EventName } from './constants/app';
+import giap from '../../../src';
+import { EventName } from '../constants/app';
 
 class App extends Component {
   state = { form: '' };
 
   onVisit = ({ economyGroup }) => {
-    GIAP.track(EventName.VISIT, { economyGroup: parseInt(economyGroup) });
+    giap.track(EventName.VISIT, { economyGroup: parseInt(economyGroup) });
   };
 
   onSignUp = ({ email }) => {
-    GIAP.track(EventName.SIGN_UP, { email });
-    GIAP.alias(email);
-    GIAP.setProfileProperties({ email });
+    giap.track(EventName.SIGN_UP, { email });
+    giap.alias(email);
+    giap.setProfileProperties({ email });
     this.setState({ form: '' });
     const { history } = this.props;
     history.push('/ask');
   };
 
   onSignIp = ({ email }) => {
-    GIAP.identify(email);
+    giap.identify(email);
     this.setState({ form: '' });
     const { history } = this.props;
     history.push('/ask');
   };
 
   onSignOut = () => {
-    GIAP.reset();
+    giap.reset();
     this.setState({ form: '' });
     const { history } = this.props;
     history.push('/');
   }
 
   onAsk = ({ problemText }) => {
-    GIAP.track(EventName.ASK, { problemText });
+    giap.track(EventName.ASK, { problemText });
   }
 
   onSetFullName = ({ fullName }) => {
-    GIAP.setProfileProperties({ fullName });
+    giap.setProfileProperties({ fullName });
   }
 
   showForm = () => {

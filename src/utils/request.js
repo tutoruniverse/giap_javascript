@@ -30,7 +30,7 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
   }
 
   if (!res || !res.status || res.status > 499) {
-    return { retry: true };
+    return { retry: true, data: undefined || res };
   }
 
   return (res.json())
