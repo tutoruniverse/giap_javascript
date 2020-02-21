@@ -28,14 +28,14 @@ Parameters
 -   `enableLog`: **[Boolean]()** - **optional** - set to `true` to enable development log
 
 ### Create alias
-Use this method right after user has just signed up
+Use this method with a string representing user id (**required**) right after user has just signed up
 
 ```javascript
 giap.alias("INSERT THE USER ID");
 ```
 
 ### Identify
-Use this method right after user has just logged in
+Use this method with a string representing user id (**required**) right after user has just logged in
 
 ```javascript
 giap.identify("INSERT THE USER ID");
@@ -53,7 +53,7 @@ giap.track("Visit", { economyGroup });
 At any moment after initializing the lib, you can set custom properties for current tracking profile
 
 ```javascript
-giap.setProfileProperties({ fullName: name });
+giap.setProfileProperties({ fullName: 'YOUR FULL NAME' });
 ```
 
 ### Reset

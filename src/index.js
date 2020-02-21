@@ -3,6 +3,7 @@ import { uuid } from 'uuidv4';
 import prepareDefaultProps from './utils/defaultProps';
 import RequestHelper from './utils/request';
 import createLogger from './utils/logger';
+import { isEmpty } from './utils/object';
 import GIAPPersistence from './persistence';
 import { QUEUE_INTERVAL } from './constants/lib';
 import RequestType from './constants/requestType';
@@ -121,7 +122,13 @@ const flush = async () => {
 
 /* EMIT EVENT */
 const track = (name, properties) => {
-  if (!isInitialized) throw Error('Analytics library not initialized');
+  if (!isInitialized) {
+    throw Error('Analytics library not initialized');
+  }
+  if (!name) {
+    throw Error('Missing event name');
+  }
+
   sendRequest(RequestType.TRACK,
     { ...prepareDefaultProps(name, persistence),
       ...properties },
@@ -130,6 +137,13 @@ const track = (name, properties) => {
 
 /* INITIALIZE */
 const initialize = (projectToken, serverUrl, enableLog = false) => {
+  if (isInitialized) {
+    throw Error('GIAP can be initialized only once');
+  }
+  if (!projectToken || !serverUrl) {
+    throw Error('Missing initialization config');
+  }
+
   token = projectToken;
   apiUrl = serverUrl;
 
@@ -162,7 +176,13 @@ const initialize = (projectToken, serverUrl, enableLog = false) => {
 
 /* GET IDENTITY */
 const identify = (userId) => {
-  if (!isInitialized) throw Error('Analytics library not initialized');
+  if (!isInitialized) {
+    throw Error('Analytics library not initialized');
+  }
+  if (!userId) {
+    throw Error('Missing userId to identify');
+  }
+
   const distinctId = persistence.getDistinctId();
   sendRequest(
     RequestType.IDENTIFY,
@@ -175,7 +195,12 @@ const identify = (userId) => {
 
 /* CREATE ALIAS */
 const alias = (userId) => {
-  if (!isInitialized) throw Error('Analytics library not initialized');
+  if (!isInitialized) {
+    throw Error('Analytics library not initialized');
+  }
+  if (!userId) {
+    throw Error('Missing userId to create alias');
+  }
   const distinctId = persistence.getDistinctId();
   sendRequest(
     RequestType.ALIAS,
@@ -187,7 +212,10 @@ const alias = (userId) => {
 
 /* RESET PROFILE */
 const reset = () => {
-  if (!isInitialized) throw Error('Analytics library not initialized');
+  if (!isInitialized) {
+    throw Error('Analytics library not initialized');
+  }
+
   const { didResetWithDistinctId } = notification;
   if (typeof didResetWithDistinctId === 'function') {
     didResetWithDistinctId(persistence.getDistinctId());
@@ -199,7 +227,13 @@ const reset = () => {
 
 /* MODIFY PROFILE */
 const setProfileProperties = (props) => {
-  if (!isInitialized) throw Error('Analytics library not initialized');
+  if (!isInitialized) {
+    throw Error('Analytics library not initialized');
+  }
+  if (isEmpty(props)) {
+    throw Error('Missing profile properties to update');
+  }
+
   const id = persistence.getDistinctId();
   sendRequest(
     RequestType.SET_PROFILE_PROPERTIES,
