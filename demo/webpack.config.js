@@ -25,9 +25,10 @@ module.exports = {
   ],
   output: {
     path: path.resolve('demo', 'build'),
-    filename: 'index.js',
+    filename: 'static/index.js',
     chunkFilename: 'static/js/[name].chunk.js',
-    publicPath,
+    // The publicPath should be '' in case of to build demo app
+    publicPath: process.env.NODE_ENV === 'development' ? publicPath : '',
     devtoolModuleFilenameTemplate: info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
   },
   resolve: {

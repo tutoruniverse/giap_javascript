@@ -14,4 +14,5 @@ module.exports = {
   appIndexJs: resolveApp('demo/src/index.js'),
   appSrc: resolveApp('demo/src'),
   appNodeModules: resolveApp('node_modules'),
+  appPackageJson: resolveApp('package.json'),
 };

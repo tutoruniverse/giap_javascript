@@ -125,7 +125,7 @@ Implement the following methods for your library:
 1. Edit config in `demo/src/constants/app.js` if needed
 2. Run <br/>
   ```bash
-  npm start-demo
+  npm run start-demo
   ```
 #### Production
     npm run build

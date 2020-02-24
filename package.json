@@ -7,7 +7,8 @@
     "build": "node scripts/build.js",
     "test": "jest",
     "test:cov": "npm run test -- --watchAll=false --coverage",
-    "start-demo": "node demo/start.js"
+    "start-demo": "node demo/scripts/start.js",
+    "build-demo": "node demo/scripts/build.js"
   },
   "devDependencies": {
     "@babel/core": "7.5.5",
