@@ -1,9 +1,7 @@
 /* import PaymentSession from '../PaymentSession'; */
 import getDeviceInfo, * as DeviceInfo from '../deviceInfo';
 
-describe('GIAPDeviceInfo', () => {
-  let props;
-
+describe('utils/deviceInfo', () => {
   const mapUserAgent = [
     {
       userAgent: 'Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Mobile Safari/537.36 Edge/13.1058',
