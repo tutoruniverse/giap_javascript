@@ -7,6 +7,8 @@ import {
 import Form from './Form';
 import giap from '../../../src';
 import { EventName } from '../constants/app';
+import ProfileProperty, { OperationType } from '../constants/profileProperty';
+import toArray from '../utils/toArray';
 
 class App extends Component {
   state = { form: '' };
@@ -15,17 +17,17 @@ class App extends Component {
     giap.track(EventName.VISIT, { economyGroup: parseInt(economyGroup) });
   };
 
-  onSignUp = ({ email }) => {
-    giap.track(EventName.SIGN_UP, { email });
-    giap.alias(email);
+  onSignUp = ({ userId, email }) => {
+    giap.track(EventName.SIGN_UP, { userId });
+    giap.alias(userId);
     giap.setProfileProperties({ email });
     this.setState({ form: '' });
     const { history } = this.props;
     history.push('/ask');
   };
 
-  onSignIp = ({ email }) => {
-    giap.identify(email);
+  onSignIp = ({ userId }) => {
+    giap.identify(userId);
     this.setState({ form: '' });
     const { history } = this.props;
     history.push('/ask');
@@ -46,6 +48,18 @@ class App extends Component {
     giap.setProfileProperties({ fullName });
   }
 
+  onIncreaseCount = ({ value }) => {
+    giap.modifyProfileProperty(OperationType.INCREMENT, ProfileProperty.COUNT, parseFloat(value));
+  }
+
+  onAppendTags = ({ value }) => {
+    giap.modifyProfileProperty(OperationType.APPEND, ProfileProperty.TAG, toArray(value));
+  }
+
+  onRemoveTags = ({ value }) => {
+    giap.modifyProfileProperty(OperationType.REMOVE, ProfileProperty.TAG, toArray(value));
+  }
+
   showForm = () => {
     const { form } = this.state;
     if (!form) return '';
@@ -58,11 +72,11 @@ class App extends Component {
         onSubmitClick = this.onVisit;
         break;
       case 'signup':
-        fields = ['email'];
+        fields = ['userId', 'email'];
         onSubmitClick = this.onSignUp;
         break;
       case 'signIn':
-        fields = ['email'];
+        fields = ['userId'];
         onSubmitClick = this.onSignIp;
         break;
       case 'ask':
@@ -72,6 +86,18 @@ class App extends Component {
       case 'setFullName':
         fields = ['fullName'];
         onSubmitClick = this.onSetFullName;
+        break;
+      case 'increaseCount':
+        fields = ['value'];
+        onSubmitClick = this.onIncreaseCount;
+        break;
+      case 'appendTags':
+        fields = ['value'];
+        onSubmitClick = this.onAppendTags;
+        break;
+      case 'removeTags':
+        fields = ['value'];
+        onSubmitClick = this.onRemoveTags;
         break;
       default:
         fields = [];
@@ -86,9 +112,10 @@ class App extends Component {
 
   render() {
     const { form } = this.state;
+    const { history } = this.props;
     return (
       <div id="giap-app-container">
-        <div id="button-container">
+        <div>
           <Switch>
             <Route
               path="/ask"
@@ -114,6 +141,44 @@ class App extends Component {
                     }}
                   >
                 Set Full Name
+                  </button>
+                  <div>
+                    <button
+                      onClick={() => history.push('/modify')}
+                    >
+                    Modify Profile Properties
+                    </button>
+                  </div>
+                </React.Fragment>
+              )}
+            />
+            <Route
+              path="/modify"
+              render={() => (
+                <React.Fragment>
+                  <button
+                    className={form === 'increaseCount' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'increaseCount' });
+                    }}
+                  >
+                Increase Count
+                  </button>
+                  <button
+                    className={form === 'appendTags' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'appendTags' });
+                    }}
+                  >
+                Append Tags
+                  </button>
+                  <button
+                    className={form === 'removeTags' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'removeTags' });
+                    }}
+                  >
+                Remove Tags
                   </button>
                 </React.Fragment>
               )}

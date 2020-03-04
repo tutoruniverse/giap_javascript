@@ -7,6 +7,7 @@ import { isEmpty } from './utils/object';
 import GIAPPersistence from './persistence';
 import { QUEUE_INTERVAL } from './constants/lib';
 import RequestType from './constants/requestType';
+import ModifyOperation from './constants/modifyOperation';
 
 let token;
 let apiUrl;
@@ -60,7 +61,6 @@ const flush = async () => {
   isFlushing = true;
 
   /* SEND REQUEST */
-
   let res;
   let callback;
   const { didEmitEvents, didUpdateProfile, didCreateAliasForUserId, didIdentifyUserId } = notification;
@@ -91,6 +91,13 @@ const flush = async () => {
     case RequestType.SET_PROFILE_PROPERTIES: {
       const { id, props } = data;
       res = await libFetch.put(`profiles/${id}`, props);
+      if (didUpdateProfile) callback = didUpdateProfile;
+      break;
+    }
+
+    case RequestType.MODIFY_PROFILE: {
+      const { id, name, props } = data;
+      res = await libFetch.put(`profiles/${id}/${name}`, props);
       if (didUpdateProfile) callback = didUpdateProfile;
       break;
     }
@@ -192,7 +199,6 @@ const identify = (userId) => {
   persistence.update({ distinctId: userId });
 };
 
-
 /* CREATE ALIAS */
 const alias = (userId) => {
   if (!isInitialized) {
@@ -225,7 +231,7 @@ const reset = () => {
   });
 };
 
-/* MODIFY PROFILE */
+/* SET PROFILE PROPERTIES */
 const setProfileProperties = (props) => {
   if (!isInitialized) {
     throw Error('Analytics library not initialized');
@@ -241,10 +247,43 @@ const setProfileProperties = (props) => {
   );
 };
 
+/* MODIFY PROFILE PROPERTY */
+const modifyProfileProperty = (operation, name, value) => {
+  if (!isInitialized) {
+    throw Error('Analytics library not initialized');
+  }
+  switch (operation) {
+    case ModifyOperation.INCREMENT:
+      if (typeof value !== 'number') {
+        throw Error('Invalid value type');
+      }
+      break;
+    case ModifyOperation.APPEND:
+    case ModifyOperation.REMOVE:
+      if (!Array.isArray(value)) {
+        throw Error('Invalid value type');
+      }
+      break;
+    default:
+      throw Error('Invalid operation type');
+  }
+  const id = persistence.getDistinctId();
+  sendRequest(
+    RequestType.MODIFY_PROFILE,
+    {
+      id,
+      name,
+      props: { operation, value },
+    }
+  );
+};
+
+
 export default {
   initialize,
   track,
   setProfileProperties,
+  modifyProfileProperty,
   alias,
   identify,
   reset,
