@@ -1,4 +1,4 @@
-import GIAP from '../index';
+import giap from '../index';
 import { QUEUE_INTERVAL } from '../constants/lib';
 
 describe('index', () => {
@@ -23,41 +23,46 @@ describe('index', () => {
 
   it('should inform about initialization properly', () => {
     try {
-      GIAP.track('TEST');
+      giap.track('TEST');
     } catch (e) {
       expect(e.message).toBe('Analytics library not initialized');
     }
     try {
-      GIAP.alias('TEST');
+      giap.alias('TEST');
     } catch (e) {
       expect(e.message).toBe('Analytics library not initialized');
     }
     try {
-      GIAP.identify();
+      giap.identify();
     } catch (e) {
       expect(e.message).toBe('Analytics library not initialized');
     }
     try {
-      GIAP.setProfileProperties();
+      giap.setProfileProperties();
     } catch (e) {
       expect(e.message).toBe('Analytics library not initialized');
     }
     try {
-      GIAP.reset();
+      giap.reset();
+    } catch (e) {
+      expect(e.message).toBe('Analytics library not initialized');
+    }
+    try {
+      giap.modifyProfileProperty();
     } catch (e) {
       expect(e.message).toBe('Analytics library not initialized');
     }
 
     try {
-      GIAP.initialize(token);
+      giap.initialize(token);
     } catch (e) {
       expect(e.message).toBe('Missing initialization config');
     }
 
-    GIAP.initialize(token, apiUrl);
+    giap.initialize(token, apiUrl);
 
     try {
-      GIAP.initialize(token, apiUrl);
+      giap.initialize(token, apiUrl);
     } catch (e) {
       expect(e.message).toBe('GIAP can be initialized only once');
     }
@@ -66,22 +71,22 @@ describe('index', () => {
   it('should ensure required params for each methods', async () => {
     setup();
     try {
-      GIAP.alias();
+      giap.alias();
     } catch (e) {
       expect(e.message).toBe('Missing userId to create alias');
     }
     try {
-      GIAP.identify();
+      giap.identify();
     } catch (e) {
       expect(e.message).toBe('Missing userId to identify');
     }
     try {
-      GIAP.track();
+      giap.track();
     } catch (e) {
       expect(e.message).toBe('Missing event name');
     }
     try {
-      GIAP.setProfileProperties({});
+      giap.setProfileProperties({});
     } catch (e) {
       expect(e.message).toBe('Missing profile properties to update');
     }
@@ -89,11 +94,11 @@ describe('index', () => {
 
   it('should create new distinctId on reset call', async () => {
     setup();
-    GIAP.track('TEST');
+    giap.track('TEST');
     await waitForFlushOnce();
 
-    GIAP.reset();
-    GIAP.track('TEST');
+    giap.reset();
+    giap.track('TEST');
     await waitForFlushOnce();
 
     const oldDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
@@ -104,8 +109,8 @@ describe('index', () => {
 
   it('should call identify with currentDistinctId as queryString', async () => {
     setup();
-    GIAP.track('TEST');
-    GIAP.identify('userTest');
+    giap.track('TEST');
+    giap.identify('userTest');
 
     await waitForFlushOnce();
     await waitForFlushOnce();
@@ -116,11 +121,11 @@ describe('index', () => {
 
   it('should emit events on batches', async () => {
     setup();
-    GIAP.track('TEST');
-    GIAP.track('TEST');
-    GIAP.track('TEST');
-    GIAP.track('TEST');
-    GIAP.setProfileProperties({ phone: '12345' });
+    giap.track('TEST');
+    giap.track('TEST');
+    giap.track('TEST');
+    giap.track('TEST');
+    giap.setProfileProperties({ phone: '12345' });
     await waitForFlushOnce();
     await waitForFlushOnce();
 
@@ -132,8 +137,8 @@ describe('index', () => {
     setup();
     fetch.mockResponse(JSON.stringify({}), { status: 500 });
 
-    GIAP.alias('userTest');
-    GIAP.identify('userTest');
+    giap.alias('userTest');
+    giap.identify('userTest');
 
     await waitForFlushOnce();
     await waitForFlushOnce();
@@ -149,20 +154,52 @@ describe('index', () => {
     expect(fetch.mock.calls[4][1].method).toBe('GET');
   });
 
-  it('should have the ability for notify after requests fetched', async () => {
+  it('should have the ability to notify after requests fetched', async () => {
     setup();
-    GIAP.notification.didEmitEvents = jest.fn();
-    GIAP.notification.didResetWithDistinctId = jest.fn();
+    giap.notification.didEmitEvents = jest.fn();
+    giap.notification.didResetWithDistinctId = jest.fn();
     fetch.mockResponse(JSON.stringify({ testNotification: true }));
 
-    GIAP.track('TEST');
-    GIAP.reset();
+    giap.track('TEST');
+    giap.reset();
     await waitForFlushOnce();
 
-    const { didEmitEvents, didResetWithDistinctId } = GIAP.notification;
+    const { didEmitEvents, didResetWithDistinctId } = giap.notification;
     expect(didEmitEvents.mock.calls[0][1]).toEqual({ testNotification: true });
 
     const distinctId = didEmitEvents.mock.calls[0][0][0].$distinctId;
     expect(didResetWithDistinctId).toHaveBeenCalledWith(distinctId);
+  });
+
+  describe('Modify Profile Property', () => {
+    it('should provide certain profile modification operations', async () => {
+      setup();
+      try {
+        giap.modifyProfileProperty('decrease');
+      } catch (e) {
+        expect(e.message).toBe('Invalid operation type');
+      }
+      giap.modifyProfileProperty('increment', 'random', 4);
+      await waitForFlushOnce();
+
+      expect(fetch.mock.calls[0][1].body).toEqual(JSON.stringify({
+        operation: 'increment',
+        value: 4,
+      }));
+    });
+
+    it('should prevent invalid value type', () => {
+      setup();
+      try {
+        giap.modifyProfileProperty('increment', 'test');
+      } catch (e) {
+        expect(e.message).toBe('Invalid value type');
+      }
+      try {
+        giap.modifyProfileProperty('remove', 'test');
+      } catch (e) {
+        expect(e.message).toBe('Invalid value type');
+      }
+    });
   });
 });
