@@ -196,6 +196,11 @@ class App extends Component {
                   >
                 Remove Tags
                   </button>
+                  <button
+                    onClick={() => { history.push('/ask'); }}
+                  >
+                Back
+                  </button>
                 </React.Fragment>
               )}
             />
