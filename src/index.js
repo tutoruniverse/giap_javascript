@@ -125,6 +125,7 @@ const flush = async () => {
   if (res.data.errorCode === DISABLE_ERROR_CODE) {
     isTokenDisabled = true;
     clearInterval(flushInterval);
+    persistence.clear();
     return;
   }
 
