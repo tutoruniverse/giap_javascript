@@ -159,11 +159,13 @@ describe('index', () => {
 
     it('should disable all functionalities when current token is disabled', async () => {
       fetch.mockResponse(JSON.stringify({ error_code: 40101 }));
+      GIAP.alias('test');
+      await waitForFlushOnce();
+      expect(fetch).toBeCalledTimes(1);
+
       GIAP.track('test');
       await waitForFlushOnce();
-      expect(() => {
-        GIAP.track('test');
-      }).toThrowError('Current token is disabled');
+      expect(fetch).toBeCalledTimes(1);
     });
   });
 });

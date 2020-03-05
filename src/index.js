@@ -49,7 +49,7 @@ const peek = () => persistence.peekFront();
 
 const sendRequest = (type, data) => {
   if (isTokenDisabled) {
-    throw Error('Current token is disabled');
+    return;
   }
 
   // Add request to the queue
