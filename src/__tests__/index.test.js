@@ -48,7 +48,7 @@ describe('index', () => {
       expect(e.message).toBe('Analytics library not initialized');
     }
     try {
-      giap.modifyProfileProperty();
+      giap.increase();
     } catch (e) {
       expect(e.message).toBe('Analytics library not initialized');
     }
@@ -174,29 +174,24 @@ describe('index', () => {
   describe('Modify Profile Property', () => {
     it('should provide certain profile modification operations', async () => {
       setup();
-      try {
-        giap.modifyProfileProperty('decrease');
-      } catch (e) {
-        expect(e.message).toBe('Invalid operation type');
-      }
-      giap.modifyProfileProperty('increment', 'random', 4);
+      giap.increase('prop', 123);
       await waitForFlushOnce();
 
       expect(fetch.mock.calls[0][1].body).toEqual(JSON.stringify({
-        operation: 'increment',
-        value: 4,
+        operation: 'increase',
+        value: 123,
       }));
     });
 
     it('should prevent invalid value type', () => {
       setup();
       try {
-        giap.modifyProfileProperty('increment', 'test');
+        giap.increase('prop');
       } catch (e) {
         expect(e.message).toBe('Invalid value type');
       }
       try {
-        giap.modifyProfileProperty('remove', 'test');
+        giap.remove('prop', 'test');
       } catch (e) {
         expect(e.message).toBe('Invalid value type');
       }

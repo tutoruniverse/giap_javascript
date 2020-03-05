@@ -56,6 +56,22 @@ At any moment after initializing the lib, you can set custom properties for curr
 giap.setProfileProperties({ fullName: 'YOUR FULL NAME' });
 ```
 
+### Modify properties for current profile
+#### Increase: Increment/decrement a numeric property
+
+```javascript
+giap.increase("propertyName", 100);
+```
+#### Append: Add element(s) to a list property
+
+```javascript
+giap.append("propertyName", ['one', 'two']);
+```
+#### Remove: Remove element(s) from a list property
+```javascript
+giap.remove("propertyName", ['two']);
+```
+
 ### Reset
 Use this method right after user has just logged out
 
@@ -80,7 +96,7 @@ Implement the following methods for your library:
   };
 
   giap.notification.didUpdateProfile = ({ id, props }, responseData) => {
-    console.log(`GIAP didUpdateProfile: ${id}.bold with withProperties: `, props);
+    console.log(`GIAP didUpdateProfile: ${id} with withProperties: `, props);
     console.log('   Response: ', responseData);
   };
 

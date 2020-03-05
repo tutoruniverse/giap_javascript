@@ -248,12 +248,12 @@ const setProfileProperties = (props) => {
 };
 
 /* MODIFY PROFILE PROPERTY */
-const modifyProfileProperty = (operation, name, value) => {
+const modifyProfileProperty = operation => (name, value) => {
   if (!isInitialized) {
     throw Error('Analytics library not initialized');
   }
   switch (operation) {
-    case ModifyOperation.INCREMENT:
+    case ModifyOperation.INCREASE:
       if (typeof value !== 'number') {
         throw Error('Invalid value type');
       }
@@ -283,7 +283,9 @@ export default {
   initialize,
   track,
   setProfileProperties,
-  modifyProfileProperty,
+  increase: modifyProfileProperty(ModifyOperation.INCREASE),
+  append: modifyProfileProperty(ModifyOperation.APPEND),
+  remove: modifyProfileProperty(ModifyOperation.REMOVE),
   alias,
   identify,
   reset,

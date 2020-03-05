@@ -7,7 +7,7 @@ import {
 import Form from './Form';
 import giap from '../../../src';
 import { EventName } from '../constants/app';
-import ProfileProperty, { OperationType } from '../constants/profileProperty';
+import ProfileProperty from '../constants/profileProperty';
 import toArray from '../utils/toArray';
 
 class App extends Component {
@@ -49,15 +49,19 @@ class App extends Component {
   }
 
   onIncreaseCount = ({ value }) => {
-    giap.modifyProfileProperty(OperationType.INCREMENT, ProfileProperty.COUNT, parseFloat(value));
+    giap.increase(ProfileProperty.COUNT, parseFloat(value));
+  }
+
+  onDecreaseCount = ({ value }) => {
+    giap.increase(ProfileProperty.COUNT, -1 * parseFloat(value));
   }
 
   onAppendTags = ({ value }) => {
-    giap.modifyProfileProperty(OperationType.APPEND, ProfileProperty.TAG, toArray(value));
+    giap.append(ProfileProperty.TAG, toArray(value));
   }
 
   onRemoveTags = ({ value }) => {
-    giap.modifyProfileProperty(OperationType.REMOVE, ProfileProperty.TAG, toArray(value));
+    giap.remove(ProfileProperty.TAG, toArray(value));
   }
 
   showForm = () => {
@@ -90,6 +94,10 @@ class App extends Component {
       case 'increaseCount':
         fields = ['value'];
         onSubmitClick = this.onIncreaseCount;
+        break;
+      case 'decreaseCount':
+        fields = ['value'];
+        onSubmitClick = this.onDecreaseCount;
         break;
       case 'appendTags':
         fields = ['value'];
@@ -165,6 +173,14 @@ class App extends Component {
                 Increase Count
                   </button>
                   <button
+                    className={form === 'decreaseCount' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.setState({ form: 'decreaseCount' });
+                    }}
+                  >
+                Decrease Count
+                  </button>
+                  <button
                     className={form === 'appendTags' ? 'button-active' : ''}
                     onClick={() => {
                       this.setState({ form: 'appendTags' });
@@ -179,6 +195,11 @@ class App extends Component {
                     }}
                   >
                 Remove Tags
+                  </button>
+                  <button
+                    onClick={() => { history.push('/ask'); }}
+                  >
+                Back
                   </button>
                 </React.Fragment>
               )}

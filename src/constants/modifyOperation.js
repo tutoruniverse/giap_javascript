@@ -1,5 +1,5 @@
 export default {
-  INCREMENT: 'increment',
+  INCREASE: 'increase',
   APPEND: 'append',
   REMOVE: 'remove',
 };
