@@ -49,7 +49,7 @@ export default class GIAPPersistence {
       let batchRequest = request;
 
       if (this.peekBack() && this.peekBack().type === RequestType.TRACK) {
-        /* Special case: the TRACK batch at rear is also
+        /* Avoid special case: the TRACK batch at rear is also
         the one being flushed. */
         if (!(isFlushing && this.getQueue().length === 1)) {
           batchRequest = this.popBack();

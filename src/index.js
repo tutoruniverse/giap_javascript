@@ -5,7 +5,7 @@ import RequestHelper from './utils/request';
 import createLogger from './utils/logger';
 import { isEmpty } from './utils/object';
 import GIAPPersistence from './persistence';
-import { QUEUE_INTERVAL } from './constants/lib';
+import { QUEUE_INTERVAL, QUEUE_LIMIT } from './constants/lib';
 import RequestType from './constants/requestType';
 
 let token;
@@ -22,21 +22,29 @@ const notification = {
   didCreateAliasForUserId: null,
   didIdentifyUserId: null };
 
-const enqueue = (request) => {
-  /* isFlushing: boolean: help to decide whether or not to separate
-  new TRACK events added during flushing to a new batch
-  */
-  persistence.updateQueue(request, isFlushing);
-};
-
 const dequeue = () => {
   persistence.popFront();
   persistence.persist();
 };
 
+const enqueue = (request) => {
+  /* isFlushing: boolean: help to decide whether or not to separate
+  new TRACK events added during flushing to a new batch */
+  persistence.updateQueue(request, isFlushing);
+
+  /* Limit the size of the task queue to avoid out of memory exceptions */
+  if (persistence.getQueue() >= QUEUE_LIMIT) {
+    dequeue();
+  }
+};
+
 const peek = () => persistence.peekFront();
 
 const sendRequest = (type, data) => {
+  if (isTokenDisabled) {
+    throw Error('Current token is disabled');
+  }
+
   // Add request to the queue
   enqueue({ type, data });
 
@@ -145,6 +153,7 @@ const initialize = (projectToken, serverUrl, enableLog = false) => {
   }
 
   token = projectToken;
+  isTokenDisabled = false;
   apiUrl = serverUrl;
 
   isFlushing = false;
