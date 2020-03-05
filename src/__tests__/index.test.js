@@ -21,6 +21,9 @@ describe('index', () => {
     });
   };
 
+  const getLastFetchParams = () => fetch.mock.calls.slice(-1)[0][1];
+  const getLastFetchUrl = () => fetch.mock.calls.slice(-1)[0][0];
+
   it('should inform about initialization properly', () => {
     expect(
       () => { GIAP.track('TEST'); }
@@ -69,13 +72,12 @@ describe('index', () => {
     setup();
     GIAP.track('TEST');
     await waitForFlushOnce();
+    const oldDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
 
     GIAP.reset();
     GIAP.track('TEST');
     await waitForFlushOnce();
-
-    const oldDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
-    const newDistinctId = JSON.parse(fetch.mock.calls[1][1].body).events[0].$distinct_id;
+    const newDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
 
     expect(oldDistinctId).not.toEqual(newDistinctId);
   });
@@ -86,48 +88,48 @@ describe('index', () => {
     GIAP.identify('userTest');
 
     await waitForFlushOnce();
+    const currentDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
     await waitForFlushOnce();
-
-    const currentDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
-    expect(fetch.mock.calls[1][0].includes(currentDistinctId)).toBeTruthy();
+    expect(getLastFetchUrl().includes(currentDistinctId)).toBeTruthy();
   });
 
-  it('should emit events on batches', async () => {
-    setup();
-    await waitForFlushOnce();
-    expect(fetch).not.toHaveBeenCalled();
+  describe('Queue process', () => {
+    it('should emit events on batches', async () => {
+      setup();
+      await waitForFlushOnce();
+      expect(fetch).not.toHaveBeenCalled();
 
-    GIAP.track('TEST');
-    GIAP.track('TEST');
-    GIAP.track('TEST');
-    GIAP.track('TEST');
-    GIAP.setProfileProperties({ phone: '12345' });
-    await waitForFlushOnce();
-    await waitForFlushOnce();
+      GIAP.track('TEST');
+      GIAP.track('TEST');
+      GIAP.track('TEST');
+      GIAP.track('TEST');
+      GIAP.setProfileProperties({ phone: '12345' });
 
-    expect(fetch.mock.calls[0][1].method).toBe('POST');
-    expect(fetch.mock.calls[1][1].method).toBe('PUT');
-  });
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('POST');
 
-  it('should retry with request failed with server side error', async () => {
-    setup();
-    fetch.mockResponse(JSON.stringify({}), { status: 500 });
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('PUT');
+    });
 
-    GIAP.alias('userTest');
-    GIAP.identify('userTest');
+    it('should retry with request failed with server side error', async () => {
+      setup();
+      fetch.mockResponse(JSON.stringify({}), { status: 500 });
 
-    await waitForFlushOnce();
-    await waitForFlushOnce();
-    expect(fetch.mock.calls[0][1].method).toBe('POST');
-    expect(fetch.mock.calls[1][1].method).toBe('POST');
+      GIAP.alias('userTest');
 
-    fetch.mockResponse(JSON.stringify({}), { status: 400 });
-    await waitForFlushOnce();
-    expect(fetch.mock.calls[2][1].method).toBe('POST');
-    await waitForFlushOnce();
-    await waitForFlushOnce();
-    expect(fetch.mock.calls[3][1].method).toBe('GET');
-    expect(fetch.mock.calls[4][1].method).toBe('GET');
+      await waitForFlushOnce();
+      /* console.log(fetch.mock.calls.slice(-1)[0]); */
+      expect(getLastFetchParams().method).toBe('POST');
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('POST');
+
+      fetch.mockResponse(JSON.stringify({}), { status: 400 });
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('POST');
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('GET');
+    });
   });
 
   it('should have the ability for notify after requests fetched', async () => {
