@@ -84,49 +84,53 @@ const flush = async () => {
 
   const { type, data } = request;
 
-  switch (type) {
-    case RequestType.TRACK: {
-      res = await libFetch.post('events', { events: data });
-      if (didEmitEvents) callback = didEmitEvents;
-      break;
-    }
+  try {
+    switch (type) {
+      case RequestType.TRACK: {
+        res = await libFetch.post('events', { events: data });
+        if (didEmitEvents) callback = didEmitEvents;
+        break;
+      }
 
-    case RequestType.ALIAS: {
-      const { userId, distinctId } = data;
-      res = await libFetch.post('alias', { userId, distinctId });
-      if (didCreateAliasForUserId) callback = didCreateAliasForUserId;
-      break; }
+      case RequestType.ALIAS: {
+        const { userId, distinctId } = data;
+        res = await libFetch.post('alias', { userId, distinctId });
+        if (didCreateAliasForUserId) callback = didCreateAliasForUserId;
+        break; }
 
-    case RequestType.IDENTIFY: {
-      const { userId, distinctId } = data;
-      res = await libFetch.get(`alias/${userId}`,
-        { currentDistinctId: distinctId });
-      if (didIdentifyUserId) callback = didIdentifyUserId;
-      break;
-    }
+      case RequestType.IDENTIFY: {
+        const { userId, distinctId } = data;
+        res = await libFetch.get(`alias/${userId}`,
+          { currentDistinctId: distinctId });
+        if (didIdentifyUserId) callback = didIdentifyUserId;
+        break;
+      }
 
-    case RequestType.SET_PROFILE_PROPERTIES: {
-      const { id, props } = data;
-      res = await libFetch.put(`profiles/${id}`, props);
-      if (didUpdateProfile) callback = didUpdateProfile;
-      break;
+      case RequestType.SET_PROFILE_PROPERTIES: {
+        const { id, props } = data;
+        res = await libFetch.put(`profiles/${id}`, props);
+        if (didUpdateProfile) callback = didUpdateProfile;
+        break;
+      }
+      default:
     }
-    default:
+  } catch (e) {
+    logger.log(e);
   }
 
   logger.log(res);
   isFlushing = false;
   logger.groupEnd('Flushing');
 
-  if (!res.retry) {
-    dequeue();
-  }
-
-  if (res.data.errorCode === DISABLE_ERROR_CODE) {
+  if (res && res.data && res.data.errorCode === DISABLE_ERROR_CODE) {
     isTokenDisabled = true;
     clearInterval(flushInterval);
     persistence.clear();
     return;
+  }
+
+  if (!res || !res.retry) {
+    dequeue();
   }
 
   if (typeof callback === 'function') {
