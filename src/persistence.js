@@ -93,7 +93,7 @@ export default class GIAPPersistence {
     }
   }
 
-  clear = () => localStorage.removeItem(PERSISTENCE_NAME);
+  clear = () => this.update({ queue: [] })
 
   popFront = () => (this.props.queue.length
     ? this.props.queue.shift()

@@ -166,6 +166,7 @@ describe('index', () => {
       GIAP.track('test');
       await waitForFlushOnce();
       expect(fetch).toBeCalledTimes(1);
+      expect(getQueueLength()).toBe(0);
     });
   });
 });
