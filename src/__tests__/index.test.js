@@ -1,5 +1,5 @@
-import GIAP from '../index';
-import { QUEUE_INTERVAL } from '../constants/lib';
+import GIAP, { getQueueLength } from '../index';
+import { QUEUE_INTERVAL, QUEUE_LIMIT } from '../constants/lib';
 
 describe('index', () => {
   const token = 'secret_token';
@@ -22,69 +22,47 @@ describe('index', () => {
   };
 
   it('should inform about initialization properly', () => {
-    try {
-      GIAP.track('TEST');
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      GIAP.alias('TEST');
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      GIAP.identify();
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      GIAP.setProfileProperties();
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      GIAP.reset();
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
+    expect(
+      () => { GIAP.track('TEST'); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { GIAP.alias('TEST'); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { GIAP.identify(); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { GIAP.setProfileProperties(); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { GIAP.reset(); }
+    ).toThrowError('Analytics library not initialized');
 
-    try {
-      GIAP.initialize(token);
-    } catch (e) {
-      expect(e.message).toBe('Missing initialization config');
-    }
+    expect(
+      () => { GIAP.initialize(token); })
+      .toThrowError('Missing initialization config');
 
     GIAP.initialize(token, apiUrl);
 
-    try {
-      GIAP.initialize(token, apiUrl);
-    } catch (e) {
-      expect(e.message).toBe('GIAP can be initialized only once');
-    }
+    expect(
+      () => { GIAP.initialize(token, apiUrl); })
+      .toThrowError('GIAP can be initialized only once');
   });
 
   it('should ensure required params for each methods', async () => {
     setup();
-    try {
-      GIAP.alias();
-    } catch (e) {
-      expect(e.message).toBe('Missing userId to create alias');
-    }
-    try {
-      GIAP.identify();
-    } catch (e) {
-      expect(e.message).toBe('Missing userId to identify');
-    }
-    try {
-      GIAP.track();
-    } catch (e) {
-      expect(e.message).toBe('Missing event name');
-    }
-    try {
-      GIAP.setProfileProperties({});
-    } catch (e) {
-      expect(e.message).toBe('Missing profile properties to update');
-    }
+    expect(
+      () => { GIAP.alias(); })
+      .toThrowError('Missing userId to create alias');
+    expect(
+      () => { GIAP.identify(); })
+      .toThrowError('Missing userId to identify');
+    expect(
+      () => { GIAP.track(); })
+      .toThrowError('Missing event name');
+    expect(
+      () => { GIAP.setProfileProperties({}); })
+      .toThrowError('Missing profile properties to update');
   });
 
   it('should create new distinctId on reset call', async () => {
@@ -116,6 +94,9 @@ describe('index', () => {
 
   it('should emit events on batches', async () => {
     setup();
+    await waitForFlushOnce();
+    expect(fetch).not.toHaveBeenCalled();
+
     GIAP.track('TEST');
     GIAP.track('TEST');
     GIAP.track('TEST');
@@ -164,5 +145,25 @@ describe('index', () => {
 
     const distinctId = didEmitEvents.mock.calls[0][0][0].$distinctId;
     expect(didResetWithDistinctId).toHaveBeenCalledWith(distinctId);
+  });
+
+  describe('Disable token', () => {
+    it('should limit the task queue size', () => {
+      setup();
+      for (let i = 0; i < 5 * QUEUE_LIMIT; ++i) {
+        GIAP.identify('test id');
+      }
+
+      expect(getQueueLength()).toBe(QUEUE_LIMIT);
+    });
+
+    it('should disable all functionalities when current token is disabled', async () => {
+      fetch.mockResponse(JSON.stringify({ error_code: 40101 }));
+      GIAP.track('test');
+      await waitForFlushOnce();
+      expect(() => {
+        GIAP.track('test');
+      }).toThrowError('Current token is disabled');
+    });
   });
 });

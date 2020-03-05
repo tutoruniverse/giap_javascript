@@ -34,8 +34,10 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
   }
 
   return (res.json())
-    .then(res => ({ retry: false,
-      data: CaseConverter.snakeCaseToCamelCaseWithPrefix(res) }));
+    .then(res => ({
+      retry: false,
+      data: CaseConverter.snakeCaseToCamelCaseWithPrefix(res),
+    }));
 };
 
 export default class RequestHelper {

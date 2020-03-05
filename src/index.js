@@ -5,22 +5,29 @@ import RequestHelper from './utils/request';
 import createLogger from './utils/logger';
 import { isEmpty } from './utils/object';
 import GIAPPersistence from './persistence';
-import { QUEUE_INTERVAL, QUEUE_LIMIT } from './constants/lib';
+import { QUEUE_INTERVAL, QUEUE_LIMIT, DISABLE_ERROR_CODE } from './constants/lib';
 import RequestType from './constants/requestType';
 
 let token;
 let apiUrl;
-let persistence;
-let isFlushing;
-let libFetch;
+let isTokenDisabled;
 let isInitialized = false;
+
+let persistence;
+let libFetch;
 let logger;
+
+let isFlushing;
+let flushInterval;
+
 const notification = {
   didResetWithDistinctId: null,
   didEmitEvents: null,
   didUpdateProfile: null,
   didCreateAliasForUserId: null,
   didIdentifyUserId: null };
+
+export const getQueueLength = () => persistence.getQueue().length;
 
 const dequeue = () => {
   persistence.popFront();
@@ -33,7 +40,7 @@ const enqueue = (request) => {
   persistence.updateQueue(request, isFlushing);
 
   /* Limit the size of the task queue to avoid out of memory exceptions */
-  if (persistence.getQueue() >= QUEUE_LIMIT) {
+  if (getQueueLength() > QUEUE_LIMIT) {
     dequeue();
   }
 };
@@ -62,7 +69,9 @@ const sendRequest = (type, data) => {
 /* FLUSH QUEUE */
 const flush = async () => {
   const request = peek();
-  if (!request) { return; }
+  if (!request) {
+    return;
+  }
 
   logger.group('FLUSHING');
   isFlushing = true;
@@ -106,16 +115,22 @@ const flush = async () => {
   }
 
   logger.log(res);
+  isFlushing = false;
+  logger.groupEnd('Flushing');
+
   if (!res.retry) {
     dequeue();
+  }
+
+  if (res.data.errorCode === DISABLE_ERROR_CODE) {
+    isTokenDisabled = true;
+    clearInterval(flushInterval);
+    return;
   }
 
   if (typeof callback === 'function') {
     callback(data, res.data || 'None');
   }
-
-  isFlushing = false;
-  logger.groupEnd('Flushing');
 
   /* QUEUE AFTER FLUSHING */
   logger.group('%cqueue after flushing', 'color: red');
@@ -141,46 +156,6 @@ const track = (name, properties) => {
     { ...prepareDefaultProps(name, persistence),
       ...properties },
     isFlushing);
-};
-
-/* INITIALIZE */
-const initialize = (projectToken, serverUrl, enableLog = false) => {
-  if (isInitialized) {
-    throw Error('GIAP can be initialized only once');
-  }
-  if (!projectToken || !serverUrl) {
-    throw Error('Missing initialization config');
-  }
-
-  token = projectToken;
-  isTokenDisabled = false;
-  apiUrl = serverUrl;
-
-  isFlushing = false;
-  logger = createLogger(enableLog);
-
-  persistence = new GIAPPersistence();
-  libFetch = new RequestHelper(token, apiUrl);
-
-  if (!persistence.getDistinctId()) {
-    persistence.update({
-      distinctId: uuid(),
-    });
-  }
-
-  if (!persistence.getDeviceId()) {
-    persistence.update({
-      deviceId: uuid(),
-    });
-  }
-
-  persistence.updateReferrer(window.document.referrer);
-
-  isInitialized = true;
-
-  setInterval(() => {
-    if (!isFlushing) flush();
-  }, QUEUE_INTERVAL);
 };
 
 /* GET IDENTITY */
@@ -234,6 +209,7 @@ const reset = () => {
   });
 };
 
+
 /* MODIFY PROFILE */
 const setProfileProperties = (props) => {
   if (!isInitialized) {
@@ -248,6 +224,47 @@ const setProfileProperties = (props) => {
     RequestType.SET_PROFILE_PROPERTIES,
     { id, props }
   );
+};
+
+
+/* INITIALIZE */
+const initialize = (projectToken, serverUrl, enableLog = false) => {
+  if (isInitialized) {
+    throw Error('GIAP can be initialized only once');
+  }
+  if (!projectToken || !serverUrl) {
+    throw Error('Missing initialization config');
+  }
+
+  token = projectToken;
+  isTokenDisabled = false;
+  apiUrl = serverUrl;
+
+  isFlushing = false;
+  logger = createLogger(enableLog);
+
+  persistence = new GIAPPersistence();
+  libFetch = new RequestHelper(token, apiUrl);
+
+  if (!persistence.getDistinctId()) {
+    persistence.update({
+      distinctId: uuid(),
+    });
+  }
+
+  if (!persistence.getDeviceId()) {
+    persistence.update({
+      deviceId: uuid(),
+    });
+  }
+
+  persistence.updateReferrer(window.document.referrer);
+
+  isInitialized = true;
+
+  flushInterval = setInterval(() => {
+    if (!isFlushing) flush();
+  }, QUEUE_INTERVAL);
 };
 
 export default {
