@@ -69,20 +69,20 @@ const flush = async () => {
 
   switch (type) {
     case RequestType.TRACK: {
-      res = await libFetch.post('events', { events: data });
+      res = await libFetch.post('/events', { events: data });
       if (didEmitEvents) callback = didEmitEvents;
       break;
     }
 
     case RequestType.ALIAS: {
       const { userId, distinctId } = data;
-      res = await libFetch.post('alias', { userId, distinctId });
+      res = await libFetch.post('/alias', { userId, distinctId });
       if (didCreateAliasForUserId) callback = didCreateAliasForUserId;
       break; }
 
     case RequestType.IDENTIFY: {
       const { userId, distinctId } = data;
-      res = await libFetch.get(`alias/${userId}`,
+      res = await libFetch.get(`/alias/${userId}`,
         { currentDistinctId: distinctId });
       if (didIdentifyUserId) callback = didIdentifyUserId;
       break;
@@ -90,14 +90,14 @@ const flush = async () => {
 
     case RequestType.SET_PROFILE_PROPERTIES: {
       const { id, props } = data;
-      res = await libFetch.put(`profiles/${id}`, props);
+      res = await libFetch.put(`/profiles/${id}`, props);
       if (didUpdateProfile) callback = didUpdateProfile;
       break;
     }
 
     case RequestType.MODIFY_PROFILE: {
       const { id, name, props } = data;
-      res = await libFetch.put(`profiles/${id}/${name}`, props);
+      res = await libFetch.put(`/profiles/${id}/${name}`, props);
       if (didUpdateProfile) callback = didUpdateProfile;
       break;
     }
