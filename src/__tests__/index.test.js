@@ -3,7 +3,7 @@ import { QUEUE_INTERVAL } from '../constants/lib';
 
 describe('index', () => {
   const token = 'secret_token';
-  const apiUrl = 'https://www.random-server-url.com/';
+  const apiUrl = 'https://www.random-server-url.com';
 
   beforeEach(() => {
     fetch.resetMocks();

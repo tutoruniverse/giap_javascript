@@ -4,6 +4,6 @@ export const EventName = {
   VISIT: 'Visit',
 };
 
-export const GIAP_API_URL = 'https://analytics-api.got-it.io/';
+export const GIAP_API_URL = 'https://analytics-api.got-it.io';
 
 export const GIAP_TOKEN = 'demo';
