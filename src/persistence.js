@@ -8,11 +8,12 @@
  *    queue
  */
 import { getReferringDomain } from './utils/deviceInfo';
-import { PERSISTENCE_NAME } from './constants/lib';
+import { PERSISTENCE_NAME, LIB_VERSION } from './constants/lib';
 import RequestType from './constants/requestType';
 
 export default class GIAPPersistence {
   props = {
+    version: LIB_VERSION,
     queue: [],
   }
 
@@ -75,7 +76,7 @@ export default class GIAPPersistence {
   getQueue = () => this.props.queue;
 
   getPersistedProps = () => {
-    const { queue, ...props } = this.props;
+    const { queue, version, ...props } = this.props;
     return props;
   }
 
@@ -85,9 +86,12 @@ export default class GIAPPersistence {
 
   load = () => {
     try {
-      this.update({
-        ...JSON.parse(localStorage.getItem(PERSISTENCE_NAME)),
-      });
+      const persisted = JSON.parse(localStorage.getItem(PERSISTENCE_NAME));
+      if (persisted && persisted.version === this.props.version){
+        this.update(JSON.parse(localStorage.getItem(PERSISTENCE_NAME)));
+      } else {
+        this.persist();
+      }
     } catch (e) {
       // pass
     }
