@@ -13,6 +13,12 @@ import toArray from '../utils/toArray';
 class App extends Component {
   state = { form: '' };
 
+  onSendTestEvents = (total) => {
+    for (let i = 1; i <= total; ++i) {
+      giap.track(EventName.TEST_EVENT, { index: i });
+    }
+  }
+
   onVisit = ({ economyGroup }) => {
     giap.track(EventName.VISIT, { economyGroup: parseInt(economyGroup) });
   };
@@ -208,6 +214,14 @@ class App extends Component {
               path="/"
               render={() => (
                 <React.Fragment>
+                  <button
+                    className={form === 'sendTestEvents' ? 'button-active' : ''}
+                    onClick={() => {
+                      this.onSendTestEvents(30);
+                    }}
+                  >
+              Send 30 test events
+                  </button>
                   <button
                     className={form === 'visit' ? 'button-active' : ''}
                     onClick={() => {
