@@ -38,6 +38,9 @@ describe('index', () => {
       () => { giap.setProfileProperties(); }
     ).toThrowError('Analytics library not initialized');
     expect(
+      () => { giap.increase(); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
       () => { giap.reset(); }
     ).toThrowError('Analytics library not initialized');
 
