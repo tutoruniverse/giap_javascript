@@ -1,5 +1,5 @@
-import giap from '../index';
-import { QUEUE_INTERVAL } from '../constants/lib';
+import giap, { getQueueLength } from '../index';
+import { QUEUE_INTERVAL, QUEUE_LIMIT } from '../constants/lib';
 
 describe('index', () => {
   const token = 'secret_token';
@@ -21,88 +21,63 @@ describe('index', () => {
     });
   };
 
-  it('should inform about initialization properly', () => {
-    try {
-      giap.track('TEST');
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      giap.alias('TEST');
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      giap.identify();
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      giap.setProfileProperties();
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      giap.reset();
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
-    try {
-      giap.increase();
-    } catch (e) {
-      expect(e.message).toBe('Analytics library not initialized');
-    }
+  const getLastFetchParams = () => fetch.mock.calls.slice(-1)[0][1];
+  const getLastFetchUrl = () => fetch.mock.calls.slice(-1)[0][0];
 
-    try {
-      giap.initialize(token);
-    } catch (e) {
-      expect(e.message).toBe('Missing initialization config');
-    }
+  it('should inform about initialization properly', () => {
+    expect(
+      () => { giap.track('TEST'); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { giap.alias('TEST'); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { giap.identify(); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { giap.setProfileProperties(); }
+    ).toThrowError('Analytics library not initialized');
+    expect(
+      () => { giap.reset(); }
+    ).toThrowError('Analytics library not initialized');
+
+    expect(
+      () => { giap.initialize(token); })
+      .toThrowError('Missing initialization config');
 
     giap.initialize(token, apiUrl);
 
-    try {
-      giap.initialize(token, apiUrl);
-    } catch (e) {
-      expect(e.message).toBe('GIAP can be initialized only once');
-    }
+    expect(
+      () => { giap.initialize(token, apiUrl); })
+      .toThrowError('GIAP can be initialized only once');
   });
 
   it('should ensure required params for each methods', async () => {
     setup();
-    try {
-      giap.alias();
-    } catch (e) {
-      expect(e.message).toBe('Missing userId to create alias');
-    }
-    try {
-      giap.identify();
-    } catch (e) {
-      expect(e.message).toBe('Missing userId to identify');
-    }
-    try {
-      giap.track();
-    } catch (e) {
-      expect(e.message).toBe('Missing event name');
-    }
-    try {
-      giap.setProfileProperties({});
-    } catch (e) {
-      expect(e.message).toBe('Missing profile properties to update');
-    }
+    expect(
+      () => { giap.alias(); })
+      .toThrowError('Missing userId to create alias');
+    expect(
+      () => { giap.identify(); })
+      .toThrowError('Missing userId to identify');
+    expect(
+      () => { giap.track(); })
+      .toThrowError('Missing event name');
+    expect(
+      () => { giap.setProfileProperties({}); })
+      .toThrowError('Missing profile properties to update');
   });
 
   it('should create new distinctId on reset call', async () => {
     setup();
     giap.track('TEST');
     await waitForFlushOnce();
+    const oldDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
 
     giap.reset();
     giap.track('TEST');
     await waitForFlushOnce();
-
-    const oldDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
-    const newDistinctId = JSON.parse(fetch.mock.calls[1][1].body).events[0].$distinct_id;
+    const newDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
 
     expect(oldDistinctId).not.toEqual(newDistinctId);
   });
@@ -113,45 +88,48 @@ describe('index', () => {
     giap.identify('userTest');
 
     await waitForFlushOnce();
+    const currentDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
     await waitForFlushOnce();
-
-    const currentDistinctId = JSON.parse(fetch.mock.calls[0][1].body).events[0].$distinct_id;
-    expect(fetch.mock.calls[1][0].includes(currentDistinctId)).toBeTruthy();
+    expect(getLastFetchUrl().includes(currentDistinctId)).toBeTruthy();
   });
 
-  it('should emit events on batches', async () => {
-    setup();
-    giap.track('TEST');
-    giap.track('TEST');
-    giap.track('TEST');
-    giap.track('TEST');
-    giap.setProfileProperties({ phone: '12345' });
-    await waitForFlushOnce();
-    await waitForFlushOnce();
+  describe('Queue process', () => {
+    it('should emit events on batches', async () => {
+      setup();
+      await waitForFlushOnce();
+      expect(fetch).not.toHaveBeenCalled();
 
-    expect(fetch.mock.calls[0][1].method).toBe('POST');
-    expect(fetch.mock.calls[1][1].method).toBe('PUT');
-  });
+      giap.track('TEST');
+      giap.track('TEST');
+      giap.track('TEST');
+      giap.track('TEST');
+      giap.setProfileProperties({ phone: '12345' });
 
-  it('should retry with request failed with server side error', async () => {
-    setup();
-    fetch.mockResponse(JSON.stringify({}), { status: 500 });
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('POST');
 
-    giap.alias('userTest');
-    giap.identify('userTest');
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('PUT');
+    });
 
-    await waitForFlushOnce();
-    await waitForFlushOnce();
-    expect(fetch.mock.calls[0][1].method).toBe('POST');
-    expect(fetch.mock.calls[1][1].method).toBe('POST');
+    it('should retry with request failed with server side error', async () => {
+      setup();
+      fetch.mockResponse(JSON.stringify({}), { status: 500 });
 
-    fetch.mockResponse(JSON.stringify({}), { status: 400 });
-    await waitForFlushOnce();
-    expect(fetch.mock.calls[2][1].method).toBe('POST');
-    await waitForFlushOnce();
-    await waitForFlushOnce();
-    expect(fetch.mock.calls[3][1].method).toBe('GET');
-    expect(fetch.mock.calls[4][1].method).toBe('GET');
+      giap.alias('userTest');
+
+      await waitForFlushOnce();
+      /* console.log(fetch.mock.calls.slice(-1)[0]); */
+      expect(getLastFetchParams().method).toBe('POST');
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('POST');
+
+      fetch.mockResponse(JSON.stringify({}), { status: 400 });
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('POST');
+      await waitForFlushOnce();
+      expect(getLastFetchParams().method).toBe('GET');
+    });
   });
 
   it('should have the ability to notify after requests fetched', async () => {
@@ -177,7 +155,7 @@ describe('index', () => {
       giap.increase('prop', 123);
       await waitForFlushOnce();
 
-      expect(fetch.mock.calls[0][1].body).toEqual(JSON.stringify({
+      expect(getLastFetchParams().body).toEqual(JSON.stringify({
         operation: 'increase',
         value: 123,
       }));
@@ -195,6 +173,29 @@ describe('index', () => {
       } catch (e) {
         expect(e.message).toBe('Invalid value type');
       }
+    });
+  });
+
+  describe('Disable token', () => {
+    it('should limit the task queue size', () => {
+      setup();
+      for (let i = 0; i < 5 * QUEUE_LIMIT; ++i) {
+        giap.identify('test id');
+      }
+
+      expect(getQueueLength()).toBe(QUEUE_LIMIT);
+    });
+
+    it('should disable all functionalities when current token is disabled', async () => {
+      fetch.mockResponse(JSON.stringify({ error_code: 40101 }));
+      giap.alias('test');
+      await waitForFlushOnce();
+      expect(fetch).toBeCalledTimes(1);
+
+      giap.track('test');
+      await waitForFlushOnce();
+      expect(fetch).toBeCalledTimes(1);
+      expect(getQueueLength()).toBe(0);
     });
   });
 });

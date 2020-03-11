@@ -5,17 +5,22 @@ import RequestHelper from './utils/request';
 import createLogger from './utils/logger';
 import { isEmpty } from './utils/object';
 import GIAPPersistence from './persistence';
-import { QUEUE_INTERVAL } from './constants/lib';
+import { QUEUE_INTERVAL, QUEUE_LIMIT, DISABLE_ERROR_CODE } from './constants/lib';
 import RequestType from './constants/requestType';
 import ModifyOperation from './constants/modifyOperation';
 
 let token;
 let apiUrl;
-let persistence;
-let isFlushing;
-let libFetch;
+let isTokenDisabled;
 let isInitialized = false;
+
+let persistence;
+let libFetch;
 let logger;
+
+let isFlushing;
+let flushInterval;
+
 const notification = {
   didResetWithDistinctId: null,
   didEmitEvents: null,
@@ -23,21 +28,31 @@ const notification = {
   didCreateAliasForUserId: null,
   didIdentifyUserId: null };
 
-const enqueue = (request) => {
-  /* isFlushing: boolean: help to decide whether or not to separate
-  new TRACK events added during flushing to a new batch
-  */
-  persistence.updateQueue(request, isFlushing);
-};
+export const getQueueLength = () => persistence.getQueue().length;
 
 const dequeue = () => {
   persistence.popFront();
   persistence.persist();
 };
 
+const enqueue = (request) => {
+  /* isFlushing: boolean: help to decide whether or not to separate
+  new TRACK events added during flushing to a new batch */
+  persistence.updateQueue(request, isFlushing);
+
+  /* Limit the size of the task queue to avoid out of memory exceptions */
+  if (getQueueLength() > QUEUE_LIMIT) {
+    dequeue();
+  }
+};
+
 const peek = () => persistence.peekFront();
 
 const sendRequest = (type, data) => {
+  if (isTokenDisabled) {
+    return;
+  }
+
   // Add request to the queue
   enqueue({ type, data });
 
@@ -55,7 +70,9 @@ const sendRequest = (type, data) => {
 /* FLUSH QUEUE */
 const flush = async () => {
   const request = peek();
-  if (!request) { return; }
+  if (!request) {
+    return;
+  }
 
   logger.group('FLUSHING');
   isFlushing = true;
@@ -67,54 +84,66 @@ const flush = async () => {
 
   const { type, data } = request;
 
-  switch (type) {
-    case RequestType.TRACK: {
-      res = await libFetch.post('/events', { events: data });
-      if (didEmitEvents) callback = didEmitEvents;
-      break;
-    }
+  try {
+    switch (type) {
+      case RequestType.TRACK: {
+        res = await libFetch.post('/events', { events: data });
+        if (didEmitEvents) callback = didEmitEvents;
+        break;
+      }
 
-    case RequestType.ALIAS: {
-      const { userId, distinctId } = data;
-      res = await libFetch.post('/alias', { userId, distinctId });
-      if (didCreateAliasForUserId) callback = didCreateAliasForUserId;
-      break; }
+      case RequestType.ALIAS: {
+        const { userId, distinctId } = data;
+        res = await libFetch.post('/alias', { userId, distinctId });
+        if (didCreateAliasForUserId) callback = didCreateAliasForUserId;
+        break; }
 
-    case RequestType.IDENTIFY: {
-      const { userId, distinctId } = data;
-      res = await libFetch.get(`/alias/${userId}`,
-        { currentDistinctId: distinctId });
-      if (didIdentifyUserId) callback = didIdentifyUserId;
-      break;
-    }
+      case RequestType.IDENTIFY: {
+        const { userId, distinctId } = data;
+        res = await libFetch.get(`/alias/${userId}`,
+          { currentDistinctId: distinctId });
+        if (didIdentifyUserId) callback = didIdentifyUserId;
+        break;
+      }
 
-    case RequestType.SET_PROFILE_PROPERTIES: {
-      const { id, props } = data;
-      res = await libFetch.put(`/profiles/${id}`, props);
-      if (didUpdateProfile) callback = didUpdateProfile;
-      break;
-    }
+      case RequestType.SET_PROFILE_PROPERTIES: {
+        const { id, props } = data;
+        res = await libFetch.put(`/profiles/${id}`, props);
+        if (didUpdateProfile) callback = didUpdateProfile;
+        break;
+      }
 
-    case RequestType.MODIFY_PROFILE: {
-      const { id, name, props } = data;
-      res = await libFetch.put(`/profiles/${id}/${name}`, props);
-      if (didUpdateProfile) callback = didUpdateProfile;
-      break;
+      case RequestType.MODIFY_PROFILE: {
+        const { id, name, props } = data;
+        res = await libFetch.put(`/profiles/${id}/${name}`, props);
+        if (didUpdateProfile) callback = didUpdateProfile;
+        break;
+      }
+
+      default:
     }
-    default:
+  } catch (e) {
+    logger.log(e);
   }
 
   logger.log(res);
-  if (!res.retry) {
+  isFlushing = false;
+  logger.groupEnd('Flushing');
+
+  if (res && res.data && res.data.errorCode === DISABLE_ERROR_CODE) {
+    isTokenDisabled = true;
+    clearInterval(flushInterval);
+    persistence.clear();
+    return;
+  }
+
+  if (!res || !res.retry) {
     dequeue();
   }
 
   if (typeof callback === 'function') {
     callback(data, res.data || 'None');
   }
-
-  isFlushing = false;
-  logger.groupEnd('Flushing');
 
   /* QUEUE AFTER FLUSHING */
   logger.group('%cqueue after flushing', 'color: red');
@@ -140,45 +169,6 @@ const track = (name, properties) => {
     { ...prepareDefaultProps(name, persistence),
       ...properties },
     isFlushing);
-};
-
-/* INITIALIZE */
-const initialize = (projectToken, serverUrl, enableLog = false) => {
-  if (isInitialized) {
-    throw Error('GIAP can be initialized only once');
-  }
-  if (!projectToken || !serverUrl) {
-    throw Error('Missing initialization config');
-  }
-
-  token = projectToken;
-  apiUrl = serverUrl;
-
-  isFlushing = false;
-  logger = createLogger(enableLog);
-
-  persistence = new GIAPPersistence();
-  libFetch = new RequestHelper(token, apiUrl);
-
-  if (!persistence.getDistinctId()) {
-    persistence.update({
-      distinctId: uuid(),
-    });
-  }
-
-  if (!persistence.getDeviceId()) {
-    persistence.update({
-      deviceId: uuid(),
-    });
-  }
-
-  persistence.updateReferrer(window.document.referrer);
-
-  isInitialized = true;
-
-  setInterval(() => {
-    if (!isFlushing) flush();
-  }, QUEUE_INTERVAL);
 };
 
 /* GET IDENTITY */
@@ -278,6 +268,45 @@ const modifyProfileProperty = operation => (name, value) => {
   );
 };
 
+/* INITIALIZE */
+const initialize = (projectToken, serverUrl, enableLog = false) => {
+  if (isInitialized) {
+    throw Error('GIAP can be initialized only once');
+  }
+  if (!projectToken || !serverUrl) {
+    throw Error('Missing initialization config');
+  }
+
+  token = projectToken;
+  isTokenDisabled = false;
+  apiUrl = serverUrl;
+
+  isFlushing = false;
+  logger = createLogger(enableLog);
+
+  persistence = new GIAPPersistence();
+  libFetch = new RequestHelper(token, apiUrl);
+
+  if (!persistence.getDistinctId()) {
+    persistence.update({
+      distinctId: uuid(),
+    });
+  }
+
+  if (!persistence.getDeviceId()) {
+    persistence.update({
+      deviceId: uuid(),
+    });
+  }
+
+  persistence.updateReferrer(window.document.referrer);
+
+  isInitialized = true;
+
+  flushInterval = setInterval(() => {
+    if (!isFlushing) flush();
+  }, QUEUE_INTERVAL);
+};
 
 export default {
   initialize,
