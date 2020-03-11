@@ -1,7 +1,30 @@
 {
-  "name": "giap_javascript",
+  "name": "@gotitinc/giap_javascript",
   "version": "0.1.0",
-  "private": true,
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "files": [
+    "es",
+    "lib",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "author": "Got It, inc.",
+  "homepage": "https://github.com/tutoruniverse/giap_javascript#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tutoruniverse/giap_javascript.git"
+  },
+  "description": "Javscript SDK for your app to communicate with Got It Analytics Platform",
+  "license": "MIT",
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/tutoruniverse/giap_javascript/issues"
+  },
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",

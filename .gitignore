@@ -3,3 +3,5 @@ npm-debug.log*
 /coverage
 lerna-debug.log
 demo/build
+lib
+es
