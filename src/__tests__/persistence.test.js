@@ -1,5 +1,5 @@
 import GIAPPersistence from 'persistence';
-import { PERSISTENCE_NAME } from '../constants/lib';
+import { PERSISTENCE_NAME, LIB_VERSION } from '../constants/lib';
 
 describe('GIAPPersistence', () => {
   let instance;
@@ -35,8 +35,11 @@ describe('GIAPPersistence', () => {
     expect(instance.props.initialReferringDomain).toBe('github.com');
   });
 
-  it('should alway load from localStorage successfully', () => {
-    localStorage.setItem(PERSISTENCE_NAME, '{ "distinctId": 123 }');
+  it('should load from localStorage properly', () => {
+    localStorage.setItem(PERSISTENCE_NAME, JSON.stringify({
+      version: LIB_VERSION,
+      distinctId: 123
+    }));
     setup();
     expect(instance.getDistinctId()).toEqual(123);
 
@@ -44,6 +47,16 @@ describe('GIAPPersistence', () => {
     setup();
     expect(instance.getPersistedProps()).toEqual({});
   });
+
+  it('should not get persisted queue from older version', () => {
+    localStorage.setItem(PERSISTENCE_NAME, JSON.stringify({
+      version: '1.0.100',
+      distinctId: 123
+    }));
+    setup();
+    expect(instance.getQueue()).toEqual([]);
+    expect(instance.getPersistedProps()).toEqual({});
+  })
 
   it('should have proper queue functionalities', () => {
     setup();
