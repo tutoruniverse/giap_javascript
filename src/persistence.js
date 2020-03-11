@@ -45,28 +45,25 @@ export default class GIAPPersistence {
   }
 
   updateQueue = (request, isFlushing) => {
+    let newRequest = { ...request };
     if (request.type === RequestType.TRACK) {
       // group TRACK requests at rear as a batch
-      let batchRequest = request;
 
-      if (this.peekBack() && this.peekBack().type === RequestType.TRACK) {
+      if (this.peekBack()
+        && this.peekBack().type === RequestType.TRACK
+        && !(isFlushing
+        && this.getQueue().length === 1)) {
         /* Avoid special case: the TRACK batch at rear is also
         the one being flushed. */
-        if (!(isFlushing && this.getQueue().length === 1)) {
-          batchRequest = this.popBack();
-          batchRequest.data = [...batchRequest.data, request.data];
-          this.update({ queue: [...this.getQueue(), batchRequest] });
-          return;
-        }
+        newRequest = this.popBack();
+        newRequest.data = [...newRequest.data, request.data];
+      } else {
+        // create new TRACK batch
+        newRequest.data = [newRequest.data];
       }
-
-      // create new TRACK batch
-      batchRequest.data = [batchRequest.data];
-      this.update({ queue: [...this.getQueue(), batchRequest] });
-      return;
     }
 
-    this.update({ queue: [...this.getQueue(), request] });
+    this.update({ queue: [...this.getQueue(), { version: LIB_VERSION, ...newRequest }] });
   }
 
   getDistinctId = () => this.props.distinctId;
@@ -87,7 +84,7 @@ export default class GIAPPersistence {
   load = () => {
     try {
       const persisted = JSON.parse(localStorage.getItem(PERSISTENCE_NAME));
-      if (persisted && persisted.version === this.props.version){
+      if (persisted && persisted.version === this.props.version) {
         this.update(JSON.parse(localStorage.getItem(PERSISTENCE_NAME)));
       } else {
         this.persist();

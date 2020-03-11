@@ -1,5 +1,5 @@
 import giap, { getQueueLength } from '../index';
-import { QUEUE_INTERVAL, QUEUE_LIMIT } from '../constants/lib';
+import * as LibConst from '../constants/lib';
 
 describe('index', () => {
   const token = 'secret_token';
@@ -11,11 +11,11 @@ describe('index', () => {
   });
 
   const setup = () => {
-    localStorage.clear();
+    /* localStorage.clear(); */
   };
 
   const waitForFlushOnce = async () => {
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
+    await new Promise(resolve => setTimeout(resolve, LibConst.QUEUE_INTERVAL));
     await new Promise((resolve) => {
       setImmediate(resolve);
     });
@@ -56,7 +56,6 @@ describe('index', () => {
   });
 
   it('should ensure required params for each methods', async () => {
-    setup();
     expect(
       () => { giap.alias(); })
       .toThrowError('Missing userId to create alias');
@@ -72,7 +71,6 @@ describe('index', () => {
   });
 
   it('should create new distinctId on reset call', async () => {
-    setup();
     giap.track('TEST');
     await waitForFlushOnce();
     const oldDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
@@ -86,7 +84,6 @@ describe('index', () => {
   });
 
   it('should call identify with currentDistinctId as queryString', async () => {
-    setup();
     giap.track('TEST');
     giap.identify('userTest');
 
@@ -98,7 +95,6 @@ describe('index', () => {
 
   describe('Queue process', () => {
     it('should emit events on batches', async () => {
-      setup();
       await waitForFlushOnce();
       expect(fetch).not.toHaveBeenCalled();
 
@@ -116,7 +112,6 @@ describe('index', () => {
     });
 
     it('should retry with request failed with server side error', async () => {
-      setup();
       fetch.mockResponse(JSON.stringify({}), { status: 500 });
 
       giap.alias('userTest');
@@ -136,7 +131,6 @@ describe('index', () => {
   });
 
   it('should have the ability to notify after requests fetched', async () => {
-    setup();
     giap.notification.didEmitEvents = jest.fn();
     giap.notification.didResetWithDistinctId = jest.fn();
     fetch.mockResponse(JSON.stringify({ testNotification: true }));
@@ -154,7 +148,6 @@ describe('index', () => {
 
   describe('Modify Profile Property', () => {
     it('should provide certain profile modification operations', async () => {
-      setup();
       giap.increase('prop', 123);
       await waitForFlushOnce();
 
@@ -165,7 +158,6 @@ describe('index', () => {
     });
 
     it('should prevent invalid value type', () => {
-      setup();
       try {
         giap.increase('prop');
       } catch (e) {
@@ -179,16 +171,28 @@ describe('index', () => {
     });
   });
 
+  describe('Version check', () => {
+    it('should not handle requests of different lib version', async () => {
+      fetch.mockResponse(JSON.stringify({ error_code: 404 }));
+      giap.alias('test');
+
+      LibConst.LIB_VERSION = 'abc';
+
+      await waitForFlushOnce();
+      expect(fetch).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Disable token', () => {
     it('should limit the task queue size', () => {
-      setup();
-      for (let i = 0; i < 5 * QUEUE_LIMIT; ++i) {
+      for (let i = 0; i < 5 * LibConst.QUEUE_LIMIT; ++i) {
         giap.identify('test id');
       }
 
-      expect(getQueueLength()).toBe(QUEUE_LIMIT);
+      expect(getQueueLength()).toBe(LibConst.QUEUE_LIMIT);
     });
 
+    /* Currently this should be the last test case to be run */
     it('should disable all functionalities when current token is disabled', async () => {
       fetch.mockResponse(JSON.stringify({ error_code: 40101 }));
       giap.alias('test');

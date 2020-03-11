@@ -5,7 +5,7 @@ import RequestHelper from './utils/request';
 import createLogger from './utils/logger';
 import { isEmpty } from './utils/object';
 import GIAPPersistence from './persistence';
-import { QUEUE_INTERVAL, QUEUE_LIMIT, DISABLE_ERROR_CODE } from './constants/lib';
+import { QUEUE_INTERVAL, LIB_VERSION, QUEUE_LIMIT, DISABLE_ERROR_CODE } from './constants/lib';
 import RequestType from './constants/requestType';
 import ModifyOperation from './constants/modifyOperation';
 
@@ -69,10 +69,12 @@ const sendRequest = (type, data) => {
 
 /* FLUSH QUEUE */
 const flush = async () => {
-  const request = peek();
-  if (!request) {
-    return;
+  let request = peek();
+  while (request && request.version !== LIB_VERSION) {
+    dequeue();
+    request = peek();
   }
+  if (!request) { return; }
 
   logger.group('FLUSHING');
   isFlushing = true;
@@ -83,6 +85,7 @@ const flush = async () => {
   const { didEmitEvents, didUpdateProfile, didCreateAliasForUserId, didIdentifyUserId } = notification;
 
   const { type, data } = request;
+
 
   try {
     switch (type) {
