@@ -73,7 +73,7 @@ export default class GIAPPersistence {
   getQueue = () => this.props.queue;
 
   getPersistedProps = () => {
-    const { queue, version, ...props } = this.props;
+    const { queue, ...props } = this.props;
     return props;
   }
 
@@ -83,12 +83,7 @@ export default class GIAPPersistence {
 
   load = () => {
     try {
-      const persisted = JSON.parse(localStorage.getItem(PERSISTENCE_NAME));
-      if (persisted && persisted.version === this.props.version) {
-        this.update(JSON.parse(localStorage.getItem(PERSISTENCE_NAME)));
-      } else {
-        this.persist();
-      }
+      this.update(JSON.parse(localStorage.getItem(PERSISTENCE_NAME)));
     } catch (e) {
       // pass
     }
