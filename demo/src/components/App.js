@@ -215,7 +215,6 @@ class App extends Component {
               render={() => (
                 <React.Fragment>
                   <button
-                    className={form === 'sendTestEvents' ? 'button-active' : ''}
                     onClick={() => {
                       this.onSendTestEvents(30);
                     }}
