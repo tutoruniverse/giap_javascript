@@ -25,6 +25,7 @@ const printBuildError = require('react-dev-utils/printBuildError');
 const paths = require('../config/paths');
 const esConfig = require('../config/webpack.config.es');
 const libConfig = require('../config/webpack.config.lib');
+const umdConfig = require('../config/webpack.config.umd');
 
 const measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild;
 const printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
@@ -125,6 +126,7 @@ console.log('File sizes after gzip:\n');
 Promise.all([
   measureAndBuild(esConfig),
   measureAndBuild(libConfig),
+  measureAndBuild(umdConfig),
 ])
   .then(() => {
     console.log(chalk.green('\nCompiled successfully.'));

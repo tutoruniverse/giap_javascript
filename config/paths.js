@@ -12,6 +12,7 @@ const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 module.exports = {
   dotenv: resolveApp(`.env`),
   appBuildES:  resolveApp(`es`),
+  appBuildUMD: resolveApp(`umd`),
   appBuildLib:  resolveApp(`lib`),
   appIndexJs: resolveApp('src/index.js'),
   appPackageJson: resolveApp('package.json'),

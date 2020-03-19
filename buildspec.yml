@@ -1,0 +1,17 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - apt-get install jq
+      - cd $CODEBUILD_SRC_DIR; npm install
+  build:
+    commands:
+      - cd $CODEBUILD_SRC_DIR; npm run build
+  post_build:
+    commands:
+      - cd $CODEBUILD_SRC_DIR; bash deploy.sh
+artifacts:
+  files:
+    - "build/**/*"
