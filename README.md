@@ -10,11 +10,11 @@
 
 ## Usage
 
-    npm install @gotitinc/giap
+    npm install @gotitinc/giap_javascript
 
 ### Import the package
   ```javascript
-  import giap from "gotitinc/giap"
+  import giap from "@gotitinc/giap_javascript"
   ```
 ### Initialize the library
 Use this method to initialize and setup the SDK. All other SDK methods ***must be*** called after this one
