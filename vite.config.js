@@ -19,6 +19,9 @@ export default defineConfig({
       },
       formats: ['cjs', 'es', 'umd'],
     },
+    rollupOptions: {
+      external: ['uuidv4'],
+    },
     sourcemap: true,
   },
 });

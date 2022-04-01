@@ -9,3 +9,4 @@ umd
 .npmrc
 dist
 *.local
+.DS_Store
