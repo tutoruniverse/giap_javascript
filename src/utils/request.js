@@ -1,4 +1,3 @@
-import QueryString from 'querystring';
 import CaseConverter from './caseConverter';
 import { isEmpty } from './object';
 
@@ -53,7 +52,8 @@ export default class RequestHelper {
   get = (endpoint, params) => {
     let url = endpoint;
     if (params && !isEmpty(params)) {
-      url += `?${QueryString.stringify(CaseConverter.camelCaseToSnakeCase(params), { encode: true })}`;
+      const paramsObj = new URLSearchParams(CaseConverter.camelCaseToSnakeCase(params));
+      url += `?${paramsObj.toString()}`;
     }
     return this.request(url, 'GET');
   };
