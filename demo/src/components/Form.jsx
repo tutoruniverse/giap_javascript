@@ -20,7 +20,7 @@ export default class Form extends Component {
     return (
       <div className="form">
         {fields.map((field) => (
-          <div>
+          <div key={field}>
             <textarea
               onChange={this.onInputChange}
               name={field}
