@@ -1,3 +1,4 @@
+import { setImmediate } from 'timers';
 import giap, { getQueueLength } from '../index';
 import { QUEUE_INTERVAL, QUEUE_LIMIT } from '../constants/lib';
 
