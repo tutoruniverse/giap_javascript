@@ -7,3 +7,5 @@ lib
 es
 umd
 .npmrc
+dist
+*.local
