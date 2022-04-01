@@ -32,7 +32,8 @@
     "start-demo": "vite serve demo",
     "build-demo": "vite build demo",
     "prettier": "prettier demo/src src --check",
-    "prettier:fix": "npm run prettier demo/src src -- --write"
+    "prettier:fix": "npm run prettier demo/src src -- --write",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@swc/core": "^1.2.162",
