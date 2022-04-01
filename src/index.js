@@ -5,7 +5,11 @@ import RequestHelper from './utils/request';
 import createLogger from './utils/logger';
 import { isEmpty } from './utils/object';
 import GIAPPersistence from './persistence';
-import { QUEUE_INTERVAL, QUEUE_LIMIT, DISABLE_ERROR_CODE } from './constants/lib';
+import {
+  QUEUE_INTERVAL,
+  QUEUE_LIMIT,
+  DISABLE_ERROR_CODE,
+} from './constants/lib';
 import RequestType from './constants/requestType';
 import ModifyOperation from './constants/modifyOperation';
 
@@ -26,7 +30,8 @@ const notification = {
   didEmitEvents: null,
   didUpdateProfile: null,
   didCreateAliasForUserId: null,
-  didIdentifyUserId: null };
+  didIdentifyUserId: null,
+};
 
 export const getQueueLength = () => persistence.getQueue().length;
 
@@ -59,11 +64,17 @@ const sendRequest = (type, data) => {
   logger.log(`%cadd request ${type}`, 'color: blue; font-weight: bold');
   logger.log(data);
   logger.group('%cqueue', 'color: green');
-  logger.log(persistence.getQueue().reduce(
-    (res, { type, data }) => (type === RequestType.TRACK
-      ? `${res}  ${type}[${data.length}]`
-      : `${res}  ${type}`),
-    ''));
+  logger.log(
+    persistence
+      .getQueue()
+      .reduce(
+        (res, { type, data }) =>
+          type === RequestType.TRACK
+            ? `${res}  ${type}[${data.length}]`
+            : `${res}  ${type}`,
+        '',
+      ),
+  );
   logger.groupEnd('queue');
 };
 
@@ -80,7 +91,12 @@ const flush = async () => {
   /* SEND REQUEST */
   let res;
   let callback;
-  const { didEmitEvents, didUpdateProfile, didCreateAliasForUserId, didIdentifyUserId } = notification;
+  const {
+    didEmitEvents,
+    didUpdateProfile,
+    didCreateAliasForUserId,
+    didIdentifyUserId,
+  } = notification;
 
   const { type, data } = request;
 
@@ -96,12 +112,14 @@ const flush = async () => {
         const { userId, distinctId } = data;
         res = await libFetch.post('/alias', { userId, distinctId });
         if (didCreateAliasForUserId) callback = didCreateAliasForUserId;
-        break; }
+        break;
+      }
 
       case RequestType.IDENTIFY: {
         const { userId, distinctId } = data;
-        res = await libFetch.get(`/alias/${userId}`,
-          { currentDistinctId: distinctId });
+        res = await libFetch.get(`/alias/${userId}`, {
+          currentDistinctId: distinctId,
+        });
         if (didIdentifyUserId) callback = didIdentifyUserId;
         break;
       }
@@ -147,11 +165,17 @@ const flush = async () => {
 
   /* QUEUE AFTER FLUSHING */
   logger.group('%cqueue after flushing', 'color: red');
-  logger.log(persistence.getQueue().reduce(
-    (res, { type, data }) => (type === RequestType.TRACK
-      ? `${res}  ${type}[${data.length}]`
-      : `${res}  ${type}`),
-    ''));
+  logger.log(
+    persistence
+      .getQueue()
+      .reduce(
+        (res, { type, data }) =>
+          type === RequestType.TRACK
+            ? `${res}  ${type}[${data.length}]`
+            : `${res}  ${type}`,
+        '',
+      ),
+  );
   logger.groupEnd('queue after flushing');
   /*  */
 };
@@ -165,10 +189,11 @@ const track = (name, properties) => {
     throw Error('Missing event name');
   }
 
-  sendRequest(RequestType.TRACK,
-    { ...prepareDefaultProps(name, persistence),
-      ...properties },
-    isFlushing);
+  sendRequest(
+    RequestType.TRACK,
+    { ...prepareDefaultProps(name, persistence), ...properties },
+    isFlushing,
+  );
 };
 
 /* GET IDENTITY */
@@ -181,10 +206,7 @@ const identify = (userId) => {
   }
 
   const distinctId = persistence.getDistinctId();
-  sendRequest(
-    RequestType.IDENTIFY,
-    { userId, distinctId }
-  );
+  sendRequest(RequestType.IDENTIFY, { userId, distinctId });
 
   persistence.update({ distinctId: userId });
 };
@@ -198,13 +220,9 @@ const alias = (userId) => {
     throw Error('Missing userId to create alias');
   }
   const distinctId = persistence.getDistinctId();
-  sendRequest(
-    RequestType.ALIAS,
-    { userId, distinctId }
-  );
+  sendRequest(RequestType.ALIAS, { userId, distinctId });
   identify(userId);
 };
-
 
 /* RESET PROFILE */
 const reset = () => {
@@ -231,14 +249,11 @@ const setProfileProperties = (props) => {
   }
 
   const id = persistence.getDistinctId();
-  sendRequest(
-    RequestType.SET_PROFILE_PROPERTIES,
-    { id, props }
-  );
+  sendRequest(RequestType.SET_PROFILE_PROPERTIES, { id, props });
 };
 
 /* MODIFY PROFILE PROPERTY */
-const modifyProfileProperty = operation => (name, value) => {
+const modifyProfileProperty = (operation) => (name, value) => {
   if (!isInitialized) {
     throw Error('Analytics library not initialized');
   }
@@ -258,14 +273,11 @@ const modifyProfileProperty = operation => (name, value) => {
       throw Error('Invalid operation type');
   }
   const id = persistence.getDistinctId();
-  sendRequest(
-    RequestType.MODIFY_PROFILE,
-    {
-      id,
-      name,
-      props: { operation, value },
-    }
-  );
+  sendRequest(RequestType.MODIFY_PROFILE, {
+    id,
+    name,
+    props: { operation, value },
+  });
 };
 
 /* INITIALIZE */

@@ -18,13 +18,23 @@ export default () => {
     console.log('   Response: ', responseData);
   };
 
-  giap.notification.didCreateAliasForUserId = ({ userId, distinctId }, responseData) => {
-    console.log(`GIAP didCreateAliasForUserId: ${userId} withDistinctId ${distinctId}`);
+  giap.notification.didCreateAliasForUserId = (
+    { userId, distinctId },
+    responseData,
+  ) => {
+    console.log(
+      `GIAP didCreateAliasForUserId: ${userId} withDistinctId ${distinctId}`,
+    );
     console.log('   Response: ', responseData);
   };
 
-  giap.notification.didIdentifyUserId = ({ userId, distinctId }, responseData) => {
-    console.log(`GIAP didIdentifyUserId: ${userId} withCurrentDistinctId ${distinctId}`);
+  giap.notification.didIdentifyUserId = (
+    { userId, distinctId },
+    responseData,
+  ) => {
+    console.log(
+      `GIAP didIdentifyUserId: ${userId} withCurrentDistinctId ${distinctId}`,
+    );
     console.log('   Response: ', responseData);
   };
 };

@@ -1,23 +1,25 @@
 import React, { Component } from 'react';
 
 export default class Form extends Component {
-  state = {}
+  state = {};
 
   onInputChange = ({ target }) => {
     this.setState({ [target.name]: target.value });
-  }
+  };
 
   onSubmitClick = () => {
     const { fields, onSubmitClick } = this.props;
     onSubmitClick(this.state);
-    fields.forEach((field) => { this.setState({ [field]: '' }); });
-  }
+    fields.forEach((field) => {
+      this.setState({ [field]: '' });
+    });
+  };
 
   render() {
     const { fields } = this.props;
     return (
       <div className="form">
-        {fields.map(field => (
+        {fields.map((field) => (
           <div>
             <textarea
               onChange={this.onInputChange}
@@ -29,11 +31,8 @@ export default class Form extends Component {
             <br />
           </div>
         ))}
-        <button
-          type="submit"
-          onClick={this.onSubmitClick}
-        >
-        Submit
+        <button type="submit" onClick={this.onSubmitClick}>
+          Submit
         </button>
       </div>
     );

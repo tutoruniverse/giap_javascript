@@ -1,1 +1,1 @@
-export default s => s.split(',');
+export default (s) => s.split(',');

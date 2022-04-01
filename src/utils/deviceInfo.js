@@ -1,4 +1,3 @@
-
 /** ADD PROPERTIES
  *  time
  *  screen_height
@@ -12,7 +11,7 @@
  *  search_engine
  *  search_keyword
  *  device
-*/
+ */
 
 export const getBrowser = (userAgent, vendor, opera) => {
   if (opera || userAgent.includes(' OPR/')) {
@@ -20,24 +19,33 @@ export const getBrowser = (userAgent, vendor, opera) => {
       return 'Opera Mini';
     }
     return 'Opera';
-  } if (/(BlackBerry|PlayBook|BB10)/i.test(userAgent)) {
+  }
+  if (/(BlackBerry|PlayBook|BB10)/i.test(userAgent)) {
     return 'BlackBerry';
-  } if (userAgent.includes('IEMobile') || userAgent.includes('WPDesktop')) {
+  }
+  if (userAgent.includes('IEMobile') || userAgent.includes('WPDesktop')) {
     return 'Internet Explorer Mobile';
-  } if (userAgent.includes('SamsungBrowser/')) {
+  }
+  if (userAgent.includes('SamsungBrowser/')) {
     // https://developer.samsung.com/internet/user-agent-string-format
     return 'Samsung Internet';
-  } if (userAgent.includes('Edge') || userAgent.includes('Edg/')) {
+  }
+  if (userAgent.includes('Edge') || userAgent.includes('Edg/')) {
     return 'Microsoft Edge';
-  } if (userAgent.includes('FBIOS')) {
+  }
+  if (userAgent.includes('FBIOS')) {
     return 'Facebook Mobile';
-  } if (userAgent.includes('Chrome')) {
+  }
+  if (userAgent.includes('Chrome')) {
     return 'Chrome';
-  } if (userAgent.includes('CriOS')) {
+  }
+  if (userAgent.includes('CriOS')) {
     return 'Chrome iOS';
-  } if (userAgent.includes('UCWEB') || userAgent.includes('UCBrowser')) {
+  }
+  if (userAgent.includes('UCWEB') || userAgent.includes('UCBrowser')) {
     return 'UC Browser';
-  } if (userAgent.includes('FxiOS')) {
+  }
+  if (userAgent.includes('FxiOS')) {
     return 'Firefox iOS';
   }
   // vendor is undefined for at least IE9
@@ -46,15 +54,20 @@ export const getBrowser = (userAgent, vendor, opera) => {
       return 'Mobile Safari';
     }
     return 'Safari';
-  } if (userAgent.includes('Android')) {
+  }
+  if (userAgent.includes('Android')) {
     return 'Android Mobile';
-  } if (userAgent.includes('Konqueror')) {
+  }
+  if (userAgent.includes('Konqueror')) {
     return 'Konqueror';
-  } if (userAgent.includes('Firefox')) {
+  }
+  if (userAgent.includes('Firefox')) {
     return 'Firefox';
-  } if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) {
+  }
+  if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) {
     return 'Internet Explorer';
-  } if (userAgent.includes('Gecko')) {
+  }
+  if (userAgent.includes('Gecko')) {
     return 'Mozilla';
   }
   return null;
@@ -97,17 +110,23 @@ export const getOs = (userAgent) => {
       return 'Windows Phone';
     }
     return 'Windows';
-  } if (/(iPhone|iPad|iPod)/.test(userAgent)) {
+  }
+  if (/(iPhone|iPad|iPod)/.test(userAgent)) {
     return 'iOS';
-  } if (/Android/.test(userAgent)) {
+  }
+  if (/Android/.test(userAgent)) {
     return 'Android';
-  } if (/(BlackBerry|PlayBook|BB10)/i.test(userAgent)) {
+  }
+  if (/(BlackBerry|PlayBook|BB10)/i.test(userAgent)) {
     return 'BlackBerry';
-  } if (/Mac/i.test(userAgent)) {
+  }
+  if (/Mac/i.test(userAgent)) {
     return 'Mac OS X';
-  } if (/Linux/.test(userAgent)) {
+  }
+  if (/Linux/.test(userAgent)) {
     return 'Linux';
-  } if (/CrOS/.test(userAgent)) {
+  }
+  if (/CrOS/.test(userAgent)) {
     return 'Chrome OS';
   }
   return null;
@@ -124,15 +143,20 @@ export const getReferringDomain = (referrer) => {
 export const getDevice = (userAgent) => {
   if (/Windows Phone/i.test(userAgent) || /WPDesktop/.test(userAgent)) {
     return 'Windows Phone';
-  } if (/iPad/.test(userAgent)) {
+  }
+  if (/iPad/.test(userAgent)) {
     return 'iPad';
-  } if (/iPod/.test(userAgent)) {
+  }
+  if (/iPod/.test(userAgent)) {
     return 'iPod Touch';
-  } if (/iPhone/.test(userAgent)) {
+  }
+  if (/iPhone/.test(userAgent)) {
     return 'iPhone';
-  } if (/(BlackBerry|PlayBook|BB10)/i.test(userAgent)) {
+  }
+  if (/(BlackBerry|PlayBook|BB10)/i.test(userAgent)) {
     return 'BlackBerry';
-  } if (/Android/.test(userAgent)) {
+  }
+  if (/Android/.test(userAgent)) {
     return 'Android';
   }
   return null;
@@ -141,11 +165,14 @@ export const getDevice = (userAgent) => {
 export const getSearchEngine = (referrer) => {
   if (referrer.search('https?://(.*)google.([^/?]*)') === 0) {
     return 'google';
-  } if (referrer.search('https?://(.*)bing.com') === 0) {
+  }
+  if (referrer.search('https?://(.*)bing.com') === 0) {
     return 'bing';
-  } if (referrer.search('https?://(.*)yahoo.com') === 0) {
+  }
+  if (referrer.search('https?://(.*)yahoo.com') === 0) {
     return 'yahoo';
-  } if (referrer.search('https?://(.*)duckduckgo.com') === 0) {
+  }
+  if (referrer.search('https?://(.*)duckduckgo.com') === 0) {
     return 'duckduckgo';
   }
   return null;
@@ -156,7 +183,7 @@ export default () => {
   const { userAgent, vendor } = navigator;
   const { referrer } = document;
 
-  return ({
+  return {
     time: Date.now(),
     screenHeight: screen.height,
     screenWidth: screen.width,
@@ -168,5 +195,5 @@ export default () => {
     referringDomain: getReferringDomain(referrer),
     searchEngine: getSearchEngine(referrer),
     device: getDevice(userAgent),
-  });
+  };
 };
