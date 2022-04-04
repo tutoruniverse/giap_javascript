@@ -2,7 +2,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 10
+      nodejs: 14
     commands:
       - apt-get install jq
       - cd $CODEBUILD_SRC_DIR; npm install
@@ -14,4 +14,4 @@ phases:
       - cd $CODEBUILD_SRC_DIR; bash deploy.sh
 artifacts:
   files:
-    - "umd/**/*"
+    - 'dist/giap.js'

@@ -1,3 +1,4 @@
+import { setImmediate } from 'timers';
 import giap, { getQueueLength } from '../index';
 import { QUEUE_INTERVAL, QUEUE_LIMIT } from '../constants/lib';
 
@@ -15,7 +16,7 @@ describe('index', () => {
   };
 
   const waitForFlushOnce = async () => {
-    await new Promise(resolve => setTimeout(resolve, QUEUE_INTERVAL));
+    await new Promise((resolve) => setTimeout(resolve, QUEUE_INTERVAL));
     await new Promise((resolve) => {
       setImmediate(resolve);
     });
@@ -25,59 +26,61 @@ describe('index', () => {
   const getLastFetchUrl = () => fetch.mock.calls.slice(-1)[0][0];
 
   it('should inform about initialization properly', () => {
-    expect(
-      () => { giap.track('TEST'); }
-    ).toThrowError('Analytics library not initialized');
-    expect(
-      () => { giap.alias('TEST'); }
-    ).toThrowError('Analytics library not initialized');
-    expect(
-      () => { giap.identify(); }
-    ).toThrowError('Analytics library not initialized');
-    expect(
-      () => { giap.setProfileProperties(); }
-    ).toThrowError('Analytics library not initialized');
-    expect(
-      () => { giap.reset(); }
-    ).toThrowError('Analytics library not initialized');
+    expect(() => {
+      giap.track('TEST');
+    }).toThrowError('Analytics library not initialized');
+    expect(() => {
+      giap.alias('TEST');
+    }).toThrowError('Analytics library not initialized');
+    expect(() => {
+      giap.identify();
+    }).toThrowError('Analytics library not initialized');
+    expect(() => {
+      giap.setProfileProperties();
+    }).toThrowError('Analytics library not initialized');
+    expect(() => {
+      giap.reset();
+    }).toThrowError('Analytics library not initialized');
 
-    expect(
-      () => { giap.initialize(token); })
-      .toThrowError('Missing initialization config');
+    expect(() => {
+      giap.initialize(token);
+    }).toThrowError('Missing initialization config');
 
     giap.initialize(token, apiUrl);
 
-    expect(
-      () => { giap.initialize(token, apiUrl); })
-      .toThrowError('GIAP can be initialized only once');
+    expect(() => {
+      giap.initialize(token, apiUrl);
+    }).toThrowError('GIAP can be initialized only once');
   });
 
   it('should ensure required params for each methods', async () => {
     setup();
-    expect(
-      () => { giap.alias(); })
-      .toThrowError('Missing userId to create alias');
-    expect(
-      () => { giap.identify(); })
-      .toThrowError('Missing userId to identify');
-    expect(
-      () => { giap.track(); })
-      .toThrowError('Missing event name');
-    expect(
-      () => { giap.setProfileProperties({}); })
-      .toThrowError('Missing profile properties to update');
+    expect(() => {
+      giap.alias();
+    }).toThrowError('Missing userId to create alias');
+    expect(() => {
+      giap.identify();
+    }).toThrowError('Missing userId to identify');
+    expect(() => {
+      giap.track();
+    }).toThrowError('Missing event name');
+    expect(() => {
+      giap.setProfileProperties({});
+    }).toThrowError('Missing profile properties to update');
   });
 
   it('should create new distinctId on reset call', async () => {
     setup();
     giap.track('TEST');
     await waitForFlushOnce();
-    const oldDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
+    const oldDistinctId = JSON.parse(getLastFetchParams().body).events[0]
+      .$distinct_id;
 
     giap.reset();
     giap.track('TEST');
     await waitForFlushOnce();
-    const newDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
+    const newDistinctId = JSON.parse(getLastFetchParams().body).events[0]
+      .$distinct_id;
 
     expect(oldDistinctId).not.toEqual(newDistinctId);
   });
@@ -88,7 +91,8 @@ describe('index', () => {
     giap.identify('userTest');
 
     await waitForFlushOnce();
-    const currentDistinctId = JSON.parse(getLastFetchParams().body).events[0].$distinct_id;
+    const currentDistinctId = JSON.parse(getLastFetchParams().body).events[0]
+      .$distinct_id;
     await waitForFlushOnce();
     expect(getLastFetchUrl().includes(currentDistinctId)).toBeTruthy();
   });
@@ -155,10 +159,12 @@ describe('index', () => {
       giap.increase('prop', 123);
       await waitForFlushOnce();
 
-      expect(getLastFetchParams().body).toEqual(JSON.stringify({
-        operation: 'increase',
-        value: 123,
-      }));
+      expect(getLastFetchParams().body).toEqual(
+        JSON.stringify({
+          operation: 'increase',
+          value: 123,
+        }),
+      );
     });
 
     it('should prevent invalid value type', () => {

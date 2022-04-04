@@ -5,7 +5,14 @@ const defaultHeaders = {
   Accept: 'application/json',
 };
 
-const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl) => {
+const request = async (
+  endpoint,
+  method,
+  body,
+  customHeaders = {},
+  token,
+  apiUrl,
+) => {
   const url = apiUrl + endpoint;
   const headers = {
     ...defaultHeaders,
@@ -22,7 +29,9 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     res = await fetch(url, {
       method,
       headers,
-      body: (body ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body)) : undefined),
+      body: body
+        ? JSON.stringify(CaseConverter.camelCaseToSnakeCase(body))
+        : undefined,
     });
   } catch (e) {
     // pass
@@ -32,11 +41,10 @@ const request = async (endpoint, method, body, customHeaders = {}, token, apiUrl
     return { retry: true, data: undefined || res };
   }
 
-  return (res.json())
-    .then(res => ({
-      retry: false,
-      data: CaseConverter.snakeCaseToCamelCaseWithPrefix(res),
-    }));
+  return res.json().then((res) => ({
+    retry: false,
+    data: CaseConverter.snakeCaseToCamelCaseWithPrefix(res),
+  }));
 };
 
 export default class RequestHelper {
@@ -52,25 +60,21 @@ export default class RequestHelper {
   get = (endpoint, params) => {
     let url = endpoint;
     if (params && !isEmpty(params)) {
-      const paramsObj = new URLSearchParams(CaseConverter.camelCaseToSnakeCase(params));
+      const paramsObj = new URLSearchParams(
+        CaseConverter.camelCaseToSnakeCase(params),
+      );
       url += `?${paramsObj.toString()}`;
     }
     return this.request(url, 'GET');
   };
 
-  post = (endpoint, body, headers = defaultHeaders) => (
-    this.request(endpoint, 'POST', body, headers)
-  );
+  post = (endpoint, body, headers = defaultHeaders) =>
+    this.request(endpoint, 'POST', body, headers);
 
-  put = (endpoint, body) => (
-    this.request(endpoint, 'PUT', body)
-  );
+  put = (endpoint, body) => this.request(endpoint, 'PUT', body);
 
-  del = (endpoint, body) => (
-    this.request(endpoint, 'DELETE', body)
-  );
+  del = (endpoint, body) => this.request(endpoint, 'DELETE', body);
 
-  request = (endpoint, method, body, customHeaders = {}) => (
-    request(endpoint, method, body, customHeaders, this.token, this.apiUrl)
-  )
+  request = (endpoint, method, body, customHeaders = {}) =>
+    request(endpoint, method, body, customHeaders, this.token, this.apiUrl);
 }

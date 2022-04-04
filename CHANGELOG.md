@@ -1,3 +1,22 @@
+## 0.2.0
+
+[0.2.0-alpha.0](#020-alpha0)
+
+## 0.2.0-alpha.0
+
+### Features
+
+- [PR](https://github.com/tutoruniverse/giap_javascript/pull/15)
+  - Support build ES Module
+  - Replace webpack with vite
+
+### Chores
+
+- Use `jest@27`
+- Use `@swc/jest` instead of `babel-jest`
+- Integrate prettier
+- Fix some errors in demo app
+
 ## 0.1.2-alpha.1
 
 ### Fixes

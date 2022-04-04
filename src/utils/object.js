@@ -6,8 +6,9 @@ export const mapKeys = (obj, modifier) => {
   return res;
 };
 
-export const isEmpty = value => value === undefined
-          || value === null
-          || value === 0
-          || (typeof value === 'object' && Object.keys(value).length === 0)
-          || (typeof value === 'string' && value.trim().length === 0);
+export const isEmpty = (value) =>
+  value === undefined ||
+  value === null ||
+  value === 0 ||
+  (typeof value === 'object' && Object.keys(value).length === 0) ||
+  (typeof value === 'string' && value.trim().length === 0);

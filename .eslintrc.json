@@ -6,7 +6,7 @@
     "jquery": true,
     "jest": true
   },
-  "extends": "airbnb",
+  "extends": ["airbnb", "prettier"],
   "rules": {
     "jsx-a11y/label-has-associated-control": 0,
     "space-before-function-paren": 0,
@@ -29,7 +29,7 @@
     "react/no-did-mount-set-state": 0,
     "max-len": 0,
     "react/jsx-no-bind": 0,
-    "class-methods-use-this" :0,
+    "class-methods-use-this": 0,
     "react/prop-types": 0,
     "no-unused-expressions": 0,
     "radix": 0,
@@ -54,13 +54,13 @@
     "react/sort-comp": [
       1,
       {
-    "order": [
-      "type-annotations",
-      "static-methods",
-      "lifecycle",
-      "everything-else",
-      "render"
-    ]
+        "order": [
+          "type-annotations",
+          "static-methods",
+          "lifecycle",
+          "everything-else",
+          "render"
+        ]
       }
     ]
   },

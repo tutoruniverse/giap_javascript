@@ -1,9 +1,5 @@
 import React, { Component } from 'react';
-import {
-  withRouter,
-  Switch,
-  Route,
-} from 'react-router-dom';
+import { withRouter, Switch, Route } from 'react-router-dom';
 import Form from './Form';
 import giap from '../../../src';
 import { EventName } from '../constants/app';
@@ -38,31 +34,31 @@ class App extends Component {
     this.setState({ form: '' });
     const { history } = this.props;
     history.push('/');
-  }
+  };
 
   onAsk = ({ problemText }) => {
     giap.track(EventName.ASK, { problemText });
-  }
+  };
 
   onSetFullName = ({ fullName }) => {
     giap.setProfileProperties({ fullName });
-  }
+  };
 
   onIncreaseCount = ({ value }) => {
     giap.increase(ProfileProperty.COUNT, parseFloat(value));
-  }
+  };
 
   onDecreaseCount = ({ value }) => {
     giap.increase(ProfileProperty.COUNT, -1 * parseFloat(value));
-  }
+  };
 
   onAppendTags = ({ value }) => {
     giap.append(ProfileProperty.TAG, toArray(value));
-  }
+  };
 
   onRemoveTags = ({ value }) => {
     giap.remove(ProfileProperty.TAG, toArray(value));
-  }
+  };
 
   showForm = () => {
     const { form } = this.state;
@@ -110,13 +106,8 @@ class App extends Component {
       default:
         fields = [];
     }
-    return (
-      <Form
-        fields={fields}
-        onSubmitClick={onSubmitClick}
-      />
-    );
-  }
+    return <Form fields={fields} onSubmitClick={onSubmitClick} />;
+  };
 
   render() {
     const { form } = this.state;
@@ -129,18 +120,14 @@ class App extends Component {
               path="/ask"
               render={() => (
                 <React.Fragment>
-                  <button
-                    onClick={this.onSignOut}
-                  >
-                Sign Out
-                  </button>
+                  <button onClick={this.onSignOut}>Sign Out</button>
                   <button
                     className={form === 'ask' ? 'button-active' : ''}
                     onClick={() => {
                       this.setState({ form: 'ask' });
                     }}
                   >
-                Ask
+                    Ask
                   </button>
                   <button
                     className={form === 'setFullName' ? 'button-active' : ''}
@@ -148,13 +135,11 @@ class App extends Component {
                       this.setState({ form: 'setFullName' });
                     }}
                   >
-                Set Full Name
+                    Set Full Name
                   </button>
                   <div>
-                    <button
-                      onClick={() => history.push('/modify')}
-                    >
-                    Modify Profile Properties
+                    <button onClick={() => history.push('/modify')}>
+                      Modify Profile Properties
                     </button>
                   </div>
                 </React.Fragment>
@@ -170,7 +155,7 @@ class App extends Component {
                       this.setState({ form: 'increaseCount' });
                     }}
                   >
-                Increase Count
+                    Increase Count
                   </button>
                   <button
                     className={form === 'decreaseCount' ? 'button-active' : ''}
@@ -178,7 +163,7 @@ class App extends Component {
                       this.setState({ form: 'decreaseCount' });
                     }}
                   >
-                Decrease Count
+                    Decrease Count
                   </button>
                   <button
                     className={form === 'appendTags' ? 'button-active' : ''}
@@ -186,7 +171,7 @@ class App extends Component {
                       this.setState({ form: 'appendTags' });
                     }}
                   >
-                Append Tags
+                    Append Tags
                   </button>
                   <button
                     className={form === 'removeTags' ? 'button-active' : ''}
@@ -194,12 +179,14 @@ class App extends Component {
                       this.setState({ form: 'removeTags' });
                     }}
                   >
-                Remove Tags
+                    Remove Tags
                   </button>
                   <button
-                    onClick={() => { history.push('/ask'); }}
+                    onClick={() => {
+                      history.push('/ask');
+                    }}
                   >
-                Back
+                    Back
                   </button>
                 </React.Fragment>
               )}
@@ -214,7 +201,7 @@ class App extends Component {
                       this.setState({ form: 'visit' });
                     }}
                   >
-              Visit
+                    Visit
                   </button>
                   <button
                     className={form === 'signup' ? 'button-active' : ''}
@@ -222,7 +209,7 @@ class App extends Component {
                       this.setState({ form: 'signup' });
                     }}
                   >
-              Sign Up
+                    Sign Up
                   </button>
                   <button
                     className={form === 'signIn' ? 'button-active' : ''}
@@ -230,12 +217,11 @@ class App extends Component {
                       this.setState({ form: 'signIn' });
                     }}
                   >
-              Sign In
+                    Sign In
                   </button>
                 </React.Fragment>
               )}
             />
-
           </Switch>
         </div>
         {this.showForm()}

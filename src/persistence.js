@@ -15,7 +15,7 @@ export default class GIAPPersistence {
   props = {
     version: LIB_VERSION,
     queue: [],
-  }
+  };
 
   constructor() {
     // load persisted data from localStorage
@@ -32,7 +32,7 @@ export default class GIAPPersistence {
     };
     // save the changes to localStorage
     this.persist();
-  }
+  };
 
   updateReferrer = (referrer) => {
     if (this.props.initialReferrer !== undefined) return;
@@ -42,7 +42,7 @@ export default class GIAPPersistence {
     });
     // save the changes to localStorage
     this.persist();
-  }
+  };
 
   updateQueue = (request, isFlushing) => {
     if (request.type === RequestType.TRACK) {
@@ -67,7 +67,7 @@ export default class GIAPPersistence {
     }
 
     this.update({ queue: [...this.getQueue(), request] });
-  }
+  };
 
   getDistinctId = () => this.props.distinctId;
 
@@ -78,16 +78,16 @@ export default class GIAPPersistence {
   getPersistedProps = () => {
     const { queue, version, ...props } = this.props;
     return props;
-  }
+  };
 
   persist = () => {
     localStorage.setItem(PERSISTENCE_NAME, JSON.stringify(this.props));
-  }
+  };
 
   load = () => {
     try {
       const persisted = JSON.parse(localStorage.getItem(PERSISTENCE_NAME));
-      if (persisted && persisted.version === this.props.version){
+      if (persisted && persisted.version === this.props.version) {
         this.update(JSON.parse(localStorage.getItem(PERSISTENCE_NAME)));
       } else {
         this.persist();
@@ -95,23 +95,18 @@ export default class GIAPPersistence {
     } catch (e) {
       // pass
     }
-  }
+  };
 
-  clear = () => this.update({ queue: [] })
+  clear = () => this.update({ queue: [] });
 
-  popFront = () => (this.props.queue.length
-    ? this.props.queue.shift()
-    : null);
+  popFront = () => (this.props.queue.length ? this.props.queue.shift() : null);
 
-  popBack = () => (this.props.queue.length
-    ? this.props.queue.pop()
-    : null);
+  popBack = () => (this.props.queue.length ? this.props.queue.pop() : null);
 
-  peekFront = () => (this.props.queue.length
-    ? this.props.queue[0]
-    : null);
+  peekFront = () => (this.props.queue.length ? this.props.queue[0] : null);
 
-  peekBack = () => (this.props.queue.length
-    ? this.props.queue[this.props.queue.length - 1]
-    : null);
+  peekBack = () =>
+    this.props.queue.length
+      ? this.props.queue[this.props.queue.length - 1]
+      : null;
 }
