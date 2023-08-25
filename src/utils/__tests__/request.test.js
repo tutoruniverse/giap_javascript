@@ -1,4 +1,5 @@
 import RequestHelper from '../request';
+import { MAXIMUM_RETRY_TIME } from '../../constants/lib';
 
 describe('utils/request', () => {
   let instance;
@@ -29,10 +30,38 @@ describe('utils/request', () => {
     expect(res).toEqual({ retry: false, data: response });
 
     fetch.mockRejectedValue(response);
-    try {
-      res = await instance.get();
-    } catch (e) {
-      expect(e).toEqual({ retry: false, data: response });
-    }
+    res = await instance.get();
+    expect(res).toEqual({ retry: true, data: undefined });
+  });
+
+  it('should handle maximum retry times for consecutive failed requests', async () => {
+    // Mock first request to be success to reset retry time counter
+    fetch.mockResponse(JSON.stringify(response));
+    const successResponse = await instance.get();
+    expect(successResponse).toEqual({ retry: false, data: response });
+
+    const requestArr = new Array(MAXIMUM_RETRY_TIME - 1).fill();
+
+    // Next four requests are failed, able to retry
+    const results = await Promise.all(
+      requestArr.map(async () => {
+        fetch.mockReject(
+          new Error({
+            status: 500,
+          }),
+        );
+        const res = await instance.get();
+        return res;
+      }),
+    );
+
+    results.forEach((result) => {
+      expect(result).toEqual({ retry: true, data: undefined });
+    });
+
+    // Fifth request is failed, should not retry
+    fetch.mockReject(new Error('fake error message'));
+    const res = await instance.get();
+    expect(res).toEqual({ retry: false, data: undefined });
   });
 });

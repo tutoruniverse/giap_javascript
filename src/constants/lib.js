@@ -9,3 +9,5 @@ export const LIB_VERSION = '1.1.1';
 export const PERSISTENCE_NAME = 'gotit.analytics.platform';
 
 export const DISABLE_ERROR_CODE = 40101;
+
+export const MAXIMUM_RETRY_TIME = 5;
