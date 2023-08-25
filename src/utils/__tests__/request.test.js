@@ -29,7 +29,11 @@ describe('utils/request', () => {
     let res = await instance.get();
     expect(res).toEqual({ retry: false, data: response });
 
-    fetch.mockRejectedValue(response);
+    fetch.mockReject(
+      new Error({
+        status: 500,
+      }),
+    );
     res = await instance.get();
     expect(res).toEqual({ retry: true, data: undefined });
   });
@@ -60,7 +64,11 @@ describe('utils/request', () => {
     });
 
     // Fifth request is failed, should not retry
-    fetch.mockReject(new Error('fake error message'));
+    fetch.mockReject(
+      new Error({
+        status: 500,
+      }),
+    );
     const res = await instance.get();
     expect(res).toEqual({ retry: false, data: undefined });
   });
